@@ -86,6 +86,7 @@ export class NodeContextProcessingServiceImpl implements NodeContextProcessingSe
       entityNode.context.accountPath = accountPath;
     } catch (e) {
       console.error(`Not able to read entity ${entityId} from ${operation}`);
+      throw e;
     }
   }
 }
