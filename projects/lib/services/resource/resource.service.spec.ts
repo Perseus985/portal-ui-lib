@@ -1,9 +1,9 @@
-import { ApolloFactory } from './apollo-factory';
-import { ResourceService } from './resource.service';
 import { TestBed } from '@angular/core/testing';
 import { LuigiCoreService } from '@openmfp/portal-ui-lib';
 import { mock } from 'jest-mock-extended';
 import { Subject, of, throwError } from 'rxjs';
+import { ApolloFactory } from './apollo-factory';
+import { ResourceService } from './resource.service';
 
 describe('ResourceService', () => {
   let service: ResourceService;
@@ -20,6 +20,22 @@ describe('ResourceService', () => {
     plural: 'testkinds',
   };
 
+  const unversionedResourceDefinition: any = {
+    ...resourceDefinition,
+    version: undefined,
+  };
+
+  const grouplessResourceDefinition: any = {
+    ...resourceDefinition,
+    group: undefined,
+  };
+
+  const grouplessUnversionedResourceDefinition: any = {
+    ...resourceDefinition,
+    group: undefined,
+    version: undefined,
+  };
+
   const namespacedNodeContext: any = {
     cluster: 'test',
     namespaceId: 'test-namespace',
@@ -33,6 +49,31 @@ describe('ResourceService', () => {
     },
   };
 
+  const unversionedNamespacedNodeContext: any = {
+    ...namespacedNodeContext,
+    resourceDefinition: {
+      ...namespacedNodeContext.resourceDefinition,
+      version: undefined,
+    },
+  };
+
+  const grouplessNamespacedNodeContext: any = {
+    ...namespacedNodeContext,
+    resourceDefinition: {
+      ...namespacedNodeContext.resourceDefinition,
+      group: undefined,
+    },
+  };
+
+  const grouplessUnversionedNamespacedNodeContext: any = {
+    ...namespacedNodeContext,
+    resourceDefinition: {
+      ...namespacedNodeContext.resourceDefinition,
+      group: undefined,
+      version: undefined,
+    },
+  };
+
   const clusterScopeNodeContext: any = {
     namespaceId: 'test-namespace',
     resourceDefinition: {
@@ -42,6 +83,31 @@ describe('ResourceService', () => {
       scope: 'Cluster',
       namespace: 'default',
       plural: 'testkinds',
+    },
+  };
+
+  const unversionedClusterScopeNodeContext: any = {
+    ...clusterScopeNodeContext,
+    resourceDefinition: {
+      ...clusterScopeNodeContext.resourceDefinition,
+      version: undefined,
+    },
+  };
+
+  const grouplessClusterScopeNodeContext: any = {
+    ...clusterScopeNodeContext,
+    resourceDefinition: {
+      ...clusterScopeNodeContext.resourceDefinition,
+      group: undefined,
+    },
+  };
+
+  const grouplessUnversionedClusterScopeNodeContext: any = {
+    ...clusterScopeNodeContext,
+    resourceDefinition: {
+      ...clusterScopeNodeContext.resourceDefinition,
+      group: undefined,
+      version: undefined,
     },
   };
 
@@ -80,7 +146,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           invalidQuery,
           namespacedNodeContext,
         )
@@ -105,7 +171,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           ['name'],
           namespacedNodeContext,
         )
@@ -132,7 +198,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           ['name'],
           namespacedNodeContext,
         )
@@ -159,7 +225,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           ['name'],
           clusterScopeNodeContext,
         )
@@ -186,7 +252,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           rawQuery,
           namespacedNodeContext,
         )
@@ -214,7 +280,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           rawQuery,
           clusterScopeNodeContext,
         )
@@ -241,7 +307,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           rawQuery,
           namespacedNodeContext,
         )
@@ -282,7 +348,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           rawQuery,
           clusterScopeNodeContext,
         )
@@ -309,7 +375,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           ['name'],
           namespacedNodeContext,
         )
@@ -338,7 +404,7 @@ describe('ResourceService', () => {
       service
         .read(
           'test-name',
-          { kind: 'TestKind', version: 'v1', operation: 'core_k8s_io' },
+          { kind: 'TestKind', version: 'v1', group: 'core_k8s_io' },
           ['name'],
           namespacedNodeContext,
         )
@@ -368,6 +434,22 @@ describe('ResourceService', () => {
           done();
         },
       });
+    });
+
+    it('should throw when list query wrappers are empty', () => {
+      const invalidContext: any = {
+        ...namespacedNodeContext,
+        resourceDefinition: {
+          ...namespacedNodeContext.resourceDefinition,
+          group: undefined,
+          version: undefined,
+          plural: '',
+        },
+      };
+
+      expect(() => service.list('myList', ['name'], invalidContext)).toThrow(
+        'At least one wrapper or inner fields is required',
+      );
     });
 
     it('should throw error when initialListQuery returns empty result', (done) => {
@@ -460,6 +542,118 @@ describe('ResourceService', () => {
         });
     });
 
+    it('should list namespaced resources without version', (done) => {
+      mockApollo.query.mockReturnValue(
+        of({
+          data: {
+            core_k8s_io: {
+              Testkinds: {
+                resourceVersion: '123',
+                items: [{ name: 'res1', metadata: { uid: 'uid1' } }],
+              },
+            },
+          },
+        }),
+      );
+      mockApollo.subscribe.mockReturnValue(
+        of({
+          data: {
+            myList: {
+              type: 'ADDED',
+              object: { name: 'res2', metadata: { uid: 'uid2' } },
+            },
+          },
+        }),
+      );
+      service
+        .list('myList', ['name'], unversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.query).toHaveBeenCalled();
+          expect(mockApollo.subscribe).toHaveBeenCalledWith({
+            query: expect.anything(),
+            variables: {
+              namespace: unversionedNamespacedNodeContext.namespaceId,
+              resourceVersion: '123',
+            },
+          });
+          done();
+        });
+    });
+
+    it('should list namespaced resources without group', (done) => {
+      mockApollo.query.mockReturnValue(
+        of({
+          data: {
+            v1: {
+              Testkinds: {
+                resourceVersion: '123',
+                items: [{ name: 'res1', metadata: { uid: 'uid1' } }],
+              },
+            },
+          },
+        }),
+      );
+      mockApollo.subscribe.mockReturnValue(
+        of({
+          data: {
+            myList: {
+              type: 'ADDED',
+              object: { name: 'res2', metadata: { uid: 'uid2' } },
+            },
+          },
+        }),
+      );
+      service
+        .list('myList', ['name'], grouplessNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.query).toHaveBeenCalled();
+          expect(mockApollo.subscribe).toHaveBeenCalledWith({
+            query: expect.anything(),
+            variables: {
+              namespace: grouplessNamespacedNodeContext.namespaceId,
+              resourceVersion: '123',
+            },
+          });
+          done();
+        });
+    });
+
+    it('should list namespaced resources without group and version', (done) => {
+      mockApollo.query.mockReturnValue(
+        of({
+          data: {
+            Testkinds: {
+              resourceVersion: '123',
+              items: [{ name: 'res1', metadata: { uid: 'uid1' } }],
+            },
+          },
+        }),
+      );
+      mockApollo.subscribe.mockReturnValue(
+        of({
+          data: {
+            myList: {
+              type: 'ADDED',
+              object: { name: 'res2', metadata: { uid: 'uid2' } },
+            },
+          },
+        }),
+      );
+      service
+        .list('myList', ['name'], grouplessUnversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.query).toHaveBeenCalled();
+          expect(mockApollo.subscribe).toHaveBeenCalledWith({
+            query: expect.anything(),
+            variables: {
+              namespace: grouplessUnversionedNamespacedNodeContext.namespaceId,
+              resourceVersion: '123',
+            },
+          });
+          done();
+        });
+    });
+
     it('should list cluster resources', (done) => {
       mockApollo.query.mockReturnValue(
         of({
@@ -488,6 +682,107 @@ describe('ResourceService', () => {
       service
         .list('myList', ['name'], clusterScopeNodeContext)
         .subscribe((res) => {
+          expect(mockApollo.query).toHaveBeenCalled();
+          expect(mockApollo.subscribe).toHaveBeenCalledWith({
+            query: expect.anything(),
+            variables: { resourceVersion: '123' },
+          });
+          done();
+        });
+    });
+
+    it('should list cluster resources without version', (done) => {
+      mockApollo.query.mockReturnValue(
+        of({
+          data: {
+            core_k8s_io: {
+              Testkinds: {
+                resourceVersion: '123',
+                items: [{ name: 'res1', metadata: { uid: 'uid1' } }],
+              },
+            },
+          },
+        }),
+      );
+      mockApollo.subscribe.mockReturnValue(
+        of({
+          data: {
+            myList: {
+              type: 'ADDED',
+              object: { name: 'res2', metadata: { uid: 'uid2' } },
+            },
+          },
+        }),
+      );
+      service
+        .list('myList', ['name'], unversionedClusterScopeNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.query).toHaveBeenCalled();
+          expect(mockApollo.subscribe).toHaveBeenCalledWith({
+            query: expect.anything(),
+            variables: { resourceVersion: '123' },
+          });
+          done();
+        });
+    });
+
+    it('should list cluster resources without group', (done) => {
+      mockApollo.query.mockReturnValue(
+        of({
+          data: {
+            v1: {
+              Testkinds: {
+                resourceVersion: '123',
+                items: [{ name: 'res1', metadata: { uid: 'uid1' } }],
+              },
+            },
+          },
+        }),
+      );
+      mockApollo.subscribe.mockReturnValue(
+        of({
+          data: {
+            myList: {
+              type: 'ADDED',
+              object: { name: 'res2', metadata: { uid: 'uid2' } },
+            },
+          },
+        }),
+      );
+      service.list('myList', ['name'], grouplessClusterScopeNodeContext).subscribe(() => {
+        expect(mockApollo.query).toHaveBeenCalled();
+        expect(mockApollo.subscribe).toHaveBeenCalledWith({
+          query: expect.anything(),
+          variables: { resourceVersion: '123' },
+        });
+        done();
+      });
+    });
+
+    it('should list cluster resources without group and version', (done) => {
+      mockApollo.query.mockReturnValue(
+        of({
+          data: {
+            Testkinds: {
+              resourceVersion: '123',
+              items: [{ name: 'res1', metadata: { uid: 'uid1' } }],
+            },
+          },
+        }),
+      );
+      mockApollo.subscribe.mockReturnValue(
+        of({
+          data: {
+            myList: {
+              type: 'ADDED',
+              object: { name: 'res2', metadata: { uid: 'uid2' } },
+            },
+          },
+        }),
+      );
+      service
+        .list('myList', ['name'], grouplessUnversionedClusterScopeNodeContext)
+        .subscribe(() => {
           expect(mockApollo.query).toHaveBeenCalled();
           expect(mockApollo.subscribe).toHaveBeenCalledWith({
             query: expect.anything(),
@@ -562,6 +857,28 @@ describe('ResourceService', () => {
               namespace: namespacedNodeContext.namespaceId,
             },
           });
+          done();
+        });
+    });
+
+    it('should return empty array for raw query when path is missing', (done) => {
+      const rawQuery = `
+      query {
+        myList {
+          myData {
+            name
+          }
+        }
+      }
+    `;
+      mockApollo.query.mockReturnValue(
+        of({ data: { myList: { myData: [{ name: 'res2' }] } } }),
+      );
+
+      service
+        .list('myList.missing', rawQuery, namespacedNodeContext)
+        .subscribe((res) => {
+          expect(res).toEqual([]);
           done();
         });
     });
@@ -777,6 +1094,57 @@ describe('ResourceService', () => {
         });
     });
 
+    it('should delete namespaced resource without version', (done) => {
+      mockApollo.mutate.mockReturnValue(of({}));
+
+      service
+        .delete(resource, unversionedResourceDefinition, unversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            variables: {
+              name: 'test-name',
+              namespace: unversionedNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should delete namespaced resource without group', (done) => {
+      mockApollo.mutate.mockReturnValue(of({}));
+
+      service
+        .delete(resource, grouplessResourceDefinition, grouplessNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            variables: {
+              name: 'test-name',
+              namespace: grouplessNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should delete namespaced resource without group and version', (done) => {
+      mockApollo.mutate.mockReturnValue(of({}));
+
+      service
+        .delete(resource, grouplessUnversionedResourceDefinition, grouplessUnversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            variables: {
+              name: 'test-name',
+              namespace: grouplessUnversionedNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
     it('should delete cluster resource', (done) => {
       mockApollo.mutate.mockReturnValue(of({}));
 
@@ -843,6 +1211,66 @@ describe('ResourceService', () => {
             variables: {
               object: resource,
               namespace: namespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should create namespaced resource without version', (done) => {
+      mockApollo.mutate.mockReturnValue(
+        of({ data: { __typename: 'TestKind' } }),
+      );
+
+      service
+        .create(resource, unversionedResourceDefinition, unversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            fetchPolicy: 'no-cache',
+            variables: {
+              object: resource,
+              namespace: unversionedNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should create namespaced resource without group', (done) => {
+      mockApollo.mutate.mockReturnValue(
+        of({ data: { __typename: 'TestKind' } }),
+      );
+
+      service
+        .create(resource, grouplessResourceDefinition, grouplessNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            fetchPolicy: 'no-cache',
+            variables: {
+              object: resource,
+              namespace: grouplessNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should create namespaced resource without group and version', (done) => {
+      mockApollo.mutate.mockReturnValue(
+        of({ data: { __typename: 'TestKind' } }),
+      );
+
+      service
+        .create(resource, grouplessUnversionedResourceDefinition, grouplessUnversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            fetchPolicy: 'no-cache',
+            variables: {
+              object: resource,
+              namespace: grouplessUnversionedNamespacedNodeContext.namespaceId,
             },
           });
           done();
@@ -957,6 +1385,69 @@ describe('ResourceService', () => {
               name: resource.metadata.name,
               object: resource,
               namespace: namespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should update namespaced resource without version', (done) => {
+      mockApollo.mutate.mockReturnValue(
+        of({ data: { __typename: 'TestKind' } }),
+      );
+
+      service
+        .update(resource, unversionedResourceDefinition, unversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            fetchPolicy: 'no-cache',
+            variables: {
+              name: resource.metadata.name,
+              object: resource,
+              namespace: unversionedNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should update namespaced resource without group', (done) => {
+      mockApollo.mutate.mockReturnValue(
+        of({ data: { __typename: 'TestKind' } }),
+      );
+
+      service
+        .update(resource, grouplessResourceDefinition, grouplessNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            fetchPolicy: 'no-cache',
+            variables: {
+              name: resource.metadata.name,
+              object: resource,
+              namespace: grouplessNamespacedNodeContext.namespaceId,
+            },
+          });
+          done();
+        });
+    });
+
+    it('should update namespaced resource without group and version', (done) => {
+      mockApollo.mutate.mockReturnValue(
+        of({ data: { __typename: 'TestKind' } }),
+      );
+
+      service
+        .update(resource, grouplessUnversionedResourceDefinition, grouplessUnversionedNamespacedNodeContext)
+        .subscribe(() => {
+          expect(mockApollo.mutate).toHaveBeenCalledWith({
+            mutation: expect.anything(),
+            fetchPolicy: 'no-cache',
+            variables: {
+              name: resource.metadata.name,
+              object: resource,
+              namespace: grouplessUnversionedNamespacedNodeContext.namespaceId,
             },
           });
           done();
