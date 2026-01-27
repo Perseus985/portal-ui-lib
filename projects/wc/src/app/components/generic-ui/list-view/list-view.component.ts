@@ -13,7 +13,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { LuigiClient } from '@luigi-project/client/luigi-element';
 import { LuigiCoreService } from '@openmfp/portal-ui-lib';
-import { Resource } from '@platform-mesh/portal-ui-lib/models';
+import { FieldDefinition, Resource } from '@platform-mesh/portal-ui-lib/models';
 import {
   ResourceNodeContext,
   ResourceRequestParams,
@@ -91,6 +91,9 @@ export class ListViewComponent {
   );
   viewColomns = computed(() => processFields(this.columns()));
   readyCondition = computed(() => this.resourceDefinition()?.readyCondition);
+  imagePathProperty = computed(
+    () => this.resourceDefinition()?.ui?.resourceImageProperty,
+  );
   hasUiCreateViewFields = computed(
     () => !!this.resourceDefinition()?.ui?.createView?.fields?.length,
   );
@@ -104,7 +107,7 @@ export class ListViewComponent {
   }
 
   list() {
-    const fields = this.generateGqlFieldsWithReadyConditions();
+    const fields = this.getListQueryFields();
     const resourceDefinition = this.getResourceDefinition();
     const queryOperation = replaceDotsAndHyphensWithUnderscores(buildResourcePath({
         group: resourceDefinition.group,
@@ -223,13 +226,20 @@ export class ListViewComponent {
     this.deleteModal()?.open(resource);
   }
 
-  private generateGqlFieldsWithReadyConditions() {
-    const readyCondition = this.readyCondition();
-    if (!readyCondition) {
-      return generateGraphQLFields(this.columns());
+  private getListQueryFields() {
+    const additionalFields: FieldDefinition[] = [];
+
+    const imagePathProperty = this.imagePathProperty();
+    if (imagePathProperty) {
+      additionalFields.push({ property: imagePathProperty });
     }
 
-    return generateGraphQLFields(this.columns().concat(readyCondition));
+    const readyCondition = this.readyCondition();
+    if (readyCondition) {
+      additionalFields.push(readyCondition);
+    }
+
+    return generateGraphQLFields(this.columns().concat(additionalFields));
   }
 
   private getResourceReadyStatus(resource: Resource) {
