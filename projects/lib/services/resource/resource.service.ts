@@ -4,7 +4,6 @@ import { Injectable, inject } from '@angular/core';
 import { TypedDocumentNode } from '@apollo/client/core';
 import { LuigiCoreService } from '@openmfp/portal-ui-lib';
 import {
-  AccountInfo,
   Resource,
   ResourceDefinition,
   ResourceListResult,
@@ -254,7 +253,7 @@ export class ResourceService {
     variables?: VariableOptions,
   ): Observable<ResourceListResult> {
     const group = replaceDotsAndHyphensWithUnderscores(
-      resourceDefinition.group ?? '',
+      resourceDefinition.group,
     );
     const version = resourceDefinition.version;
     const kind = capitalize(resourceDefinition.plural);
@@ -341,7 +340,7 @@ export class ResourceService {
     nodeContext: ResourceNodeContext,
   ) {
     const group = replaceDotsAndHyphensWithUnderscores(
-      resourceDefinition.group ?? '',
+      resourceDefinition.group,
     );
     const isNamespacedResource = this.isNamespacedResource(nodeContext);
     const kind = resourceDefinition.kind;
@@ -388,7 +387,7 @@ export class ResourceService {
   ) {
     const isNamespacedResource = this.isNamespacedResource(nodeContext);
     const group = replaceDotsAndHyphensWithUnderscores(
-      resourceDefinition.group ?? '',
+      resourceDefinition.group,
     );
     const version = resourceDefinition.version;
     const kind = resourceDefinition.kind;
@@ -437,7 +436,7 @@ export class ResourceService {
   ) {
     const isNamespacedResource = this.isNamespacedResource(nodeContext);
     const group = replaceDotsAndHyphensWithUnderscores(
-      resourceDefinition.group ?? '',
+      resourceDefinition.group,
     );
     const kind = resourceDefinition.kind;
     const version = resourceDefinition.version;
@@ -481,84 +480,6 @@ export class ResourceService {
           this.alertErrors(error);
           console.error('Error executing GraphQL query.', error);
           return error;
-        }),
-      );
-  }
-
-  readAccountInfo(nodeContext: ResourceNodeContext): Observable<AccountInfo> {
-    return this.apolloFactory
-      .apollo(nodeContext)
-      .query<string>({
-        query: gql`
-          {
-            core_platform_mesh_io {
-              v1alpha1 {
-                AccountInfo(name: "account") {
-                  metadata {
-                    name
-                    annotations
-                  }
-                  spec {
-                    clusterInfo {
-                      ca
-                    }
-                    organization {
-                      originClusterId
-                    }
-                  }
-                }
-              }
-            }
-          }
-        `,
-      })
-      .pipe(
-        map((res: any) => {
-          return res.data.core_platform_mesh_io.v1alpha1.AccountInfo;
-        }),
-        catchError((error) => {
-          this.alertErrors(error);
-          console.error('Error executing GraphQL query.', error);
-          return error;
-        }),
-      );
-  }
-
-  public readOrganizationReady(
-    nodeContext: ResourceNodeContext,
-  ): Observable<boolean> {
-    return this.apolloFactory
-      .apollo(nodeContext)
-      .query<boolean>({
-        query: gql`
-          {
-            core_kcp_io {
-              v1alpha1 {
-                LogicalCluster(name: "cluster") {
-                  status {
-                    phase
-                  }
-                }
-              }
-            }
-          }
-        `,
-      })
-      .pipe(
-        map((res: any) => {
-          const isReady =
-            res.data.core_kcp_io.v1alpha1.LogicalCluster.status.phase ===
-            'Ready';
-          if (!isReady) {
-            this.luigiCoreService.navigation().navigate('/error/503');
-          }
-
-          return isReady;
-        }),
-        catchError((error) => {
-          this.alertErrors(error);
-          console.error('Error executing GraphQL query.', error);
-          throw error;
         }),
       );
   }
