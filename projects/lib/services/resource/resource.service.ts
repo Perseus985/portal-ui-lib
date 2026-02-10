@@ -262,7 +262,7 @@ export class ResourceService {
         catchError((error) => {
           this.alertErrors(error);
           console.error('Error executing GraphQL query.', error);
-          return error;
+          return throwError(() => error);
         }),
       );
   }
@@ -364,7 +364,7 @@ export class ResourceService {
         catchError((error) => {
           this.alertErrors(error);
           console.error('Error executing GraphQL query.', error);
-          return error;
+          return throwError(() => error);
         }),
       );
   }
@@ -413,7 +413,7 @@ export class ResourceService {
         catchError((error) => {
           this.alertErrors(error);
           console.error('Error executing GraphQL query.', error);
-          return error;
+          return throwError(() => error);
         }),
       );
   }
@@ -468,7 +468,7 @@ export class ResourceService {
         catchError((error) => {
           this.alertErrors(error);
           console.error('Error executing GraphQL query.', error);
-          return error;
+          return throwError(() => error);
         }),
       );
   }

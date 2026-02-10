@@ -2,11 +2,12 @@ import { kcpRootOrgsPath } from '../models/constants';
 import { LuigiExtendedGlobalContextConfigServiceImpl } from './luigi-extended-global-context-config.service';
 import { TestBed } from '@angular/core/testing';
 import { EnvConfigService } from '@openmfp/portal-ui-lib';
-import { mock } from 'jest-mock-extended';
+import { MockedObject } from 'vitest';
+import { mock } from 'vitest-mock-extended';
 
 describe('LuigiExtendedGlobalContextConfigServiceImpl', () => {
   let service: LuigiExtendedGlobalContextConfigServiceImpl;
-  let envConfigService: jest.Mocked<EnvConfigService>;
+  let envConfigService: MockedObject<EnvConfigService>;
 
   beforeEach(() => {
     envConfigService = mock<EnvConfigService>();
@@ -22,7 +23,7 @@ describe('LuigiExtendedGlobalContextConfigServiceImpl', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('createLuigiExtendedGlobalContext', () => {

@@ -3,28 +3,29 @@ import { CrdGatewayKcpPatchResolver } from './crd-gateway-kcp-patch-resolver.ser
 import { NodeChangeHookConfigServiceImpl } from './node-change-hook-config.service';
 import { TestBed } from '@angular/core/testing';
 import { LuigiCoreService } from '@openmfp/portal-ui-lib';
+import { MockedObject } from 'vitest';
 
 describe('NodeChangeHookConfigServiceImpl', () => {
   let service: NodeChangeHookConfigServiceImpl;
   let mockLuigiCoreService: any;
-  let mockCrdGatewayKcpPatchResolver: jest.Mocked<CrdGatewayKcpPatchResolver>;
-  let mockAccountPathResolverService: jest.Mocked<AccountPathResolverService>;
+  let mockCrdGatewayKcpPatchResolver: MockedObject<CrdGatewayKcpPatchResolver>;
+  let mockAccountPathResolverService: MockedObject<AccountPathResolverService>;
 
   beforeEach(() => {
     mockLuigiCoreService = {
-      navigation: jest.fn().mockReturnValue({
-        navigate: jest.fn(),
+      navigation: vi.fn().mockReturnValue({
+        navigate: vi.fn(),
       }),
-      getGlobalContext: jest.fn().mockReturnValue({ organization: 'org1' }),
+      getGlobalContext: vi.fn().mockReturnValue({ organization: 'org1' }),
     };
 
     mockCrdGatewayKcpPatchResolver = {
-      resolveCrdGatewayKcpPath: jest.fn(),
-    } as unknown as jest.Mocked<CrdGatewayKcpPatchResolver>;
+      resolveCrdGatewayKcpPath: vi.fn(),
+    } as unknown as MockedObject<CrdGatewayKcpPatchResolver>;
 
     mockAccountPathResolverService = {
-      resolveAccountHierarchy: jest.fn(),
-    } as unknown as jest.Mocked<AccountPathResolverService>;
+      resolveAccountHierarchy: vi.fn(),
+    } as unknown as MockedObject<AccountPathResolverService>;
 
     TestBed.configureTestingModule({
       providers: [

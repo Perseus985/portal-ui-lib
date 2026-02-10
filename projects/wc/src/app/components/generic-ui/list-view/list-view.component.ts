@@ -15,6 +15,26 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import {
+  Icon,
+  Option,
+  Select,
+  Table,
+  TableCell,
+  TableGrowing,
+  TableHeaderCell,
+  TableHeaderRow,
+  TableRow,
+  Text,
+  Title,
+  Toolbar,
+  ToolbarButton,
+} from '@fundamental-ngx/ui5-webcomponents';
+import {
+  DynamicPage,
+  DynamicPageTitle,
+  IllustratedMessage,
+} from '@fundamental-ngx/ui5-webcomponents-fiori';
 import { LuigiClient } from '@luigi-project/client/luigi-element';
 import { LuigiCoreService } from '@openmfp/portal-ui-lib';
 import {
@@ -36,25 +56,7 @@ import {
   getResourceValueByJsonPath,
   replaceDotsAndHyphensWithUnderscores,
 } from '@platform-mesh/portal-ui-lib/utils';
-import {
-  DynamicPageComponent,
-  DynamicPageTitleComponent,
-  IconComponent,
-  IllustratedMessageComponent,
-  OptionComponent,
-  SelectComponent,
-  TableCellComponent,
-  TableComponent,
-  TableGrowingComponent,
-  TableHeaderCellComponent,
-  TableHeaderRowComponent,
-  TableRowComponent,
-  TextComponent,
-  TitleComponent,
-  ToolbarButtonComponent,
-  ToolbarComponent,
-} from '@ui5/webcomponents-ngx';
-import { catchError, finalize } from 'rxjs/operators';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'pm-list-view',
@@ -66,23 +68,23 @@ import { catchError, finalize } from 'rxjs/operators';
   imports: [
     CreateResourceModalComponent,
     DeleteResourceModalComponent,
-    DynamicPageComponent,
-    DynamicPageTitleComponent,
-    IconComponent,
-    IllustratedMessageComponent,
-    TableComponent,
-    TableCellComponent,
-    TableHeaderCellComponent,
-    TableHeaderRowComponent,
-    TableRowComponent,
-    TextComponent,
-    TitleComponent,
-    ToolbarButtonComponent,
-    ToolbarComponent,
+    DynamicPage,
+    DynamicPageTitle,
+    Icon,
+    IllustratedMessage,
+    Table,
+    TableCell,
+    TableHeaderCell,
+    TableHeaderRow,
+    TableRow,
+    Text,
+    Title,
+    ToolbarButton,
+    Toolbar,
     ValueCellComponent,
-    SelectComponent,
-    OptionComponent,
-    TableGrowingComponent,
+    Select,
+    Option,
+    TableGrowing,
   ],
 })
 export class ListViewComponent {
@@ -210,18 +212,14 @@ export class ListViewComponent {
         continue: this.currentContinueToken,
       })
       .pipe(
-        takeUntilDestroyed(this.destroyRef),
-        catchError((error) => {
-          this.errorHandlerService.handleUnauthorizedAccess(error);
-          throw error;
-        }),
         finalize(() => (this.isLoadingList = false)),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
         next: (result: ResourceListResult) => {
           this.resources.update((values) => {
             const map = new Map(values.map((i) => [i.metadata.name, i]));
-            result.items.forEach((i) => {
+            (result.items ?? []).forEach((i) => {
               map.set(i.metadata.name, i);
             });
             return [...map.values()];
@@ -230,6 +228,9 @@ export class ListViewComponent {
           this.hasMore.set(!!result.continue);
           this.currentContinueToken = result.continue;
           this.remainingItemCount.set(result.remainingItemCount || 0);
+        },
+        error: (error) => {
+          this.errorHandlerService.handleUnauthorizedAccess(error);
         },
       });
   }

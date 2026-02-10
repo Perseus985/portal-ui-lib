@@ -1,6 +1,33 @@
-import { getValueByPath } from './get-value-by-path';
+vi.mock('jsonpath', async (importOriginal) => {
+  const actual: any = await importOriginal();
+
+  const safeQuery = (...args: any[]) => {
+    const res = actual?.query?.(...args);
+    return Array.isArray(res) ? res : [];
+  };
+
+  return {
+    ...actual,
+    query: safeQuery,
+    default: {
+      ...(actual?.default ?? actual),
+      query: safeQuery,
+    },
+  };
+});
 
 describe('getValueByPath', () => {
+  let getValueByPath: <T extends object, R = unknown>(
+    obj: T,
+    path: string,
+  ) => R | undefined;
+
+  beforeEach(async () => {
+    vi.resetModules();
+    ({ getValueByPath } = await import('./get-value-by-path'));
+    vi.clearAllMocks();
+  });
+
   const obj = {
     user: {
       id: 1,
@@ -50,7 +77,7 @@ describe('getValueByPath', () => {
     expect(getValueByPath(obj, 'settings.notifications.email')).toBe(true);
     expect(getValueByPath(obj, 'user.address.zip')).toBe(12345);
 
-    const testObj = { a: null };
+    const testObj = { a: null as null | { b: string } };
     expect(getValueByPath(testObj, 'a')).toBeNull();
     expect(getValueByPath(testObj, 'a.b')).toBeUndefined();
   });

@@ -9,15 +9,16 @@ import {
   AccountInfoService,
   OrganizationReadyService,
 } from '@platform-mesh/portal-ui-lib/services';
-import { mock } from 'jest-mock-extended';
 import { of, throwError } from 'rxjs';
+import { MockedObject } from 'vitest';
+import { mock } from 'vitest-mock-extended';
 
 describe('NodeContextProcessingServiceImpl', () => {
   let service: NodeContextProcessingServiceImpl;
-  let crdGatewayKcpPatchResolver: jest.Mocked<CrdGatewayKcpPatchResolver>;
-  let accountPathResolver: jest.Mocked<AccountPathResolverService>;
-  let accountInfoService: jest.Mocked<AccountInfoService>;
-  let organizationReadyService: jest.Mocked<OrganizationReadyService>;
+  let crdGatewayKcpPatchResolver: MockedObject<CrdGatewayKcpPatchResolver>;
+  let accountPathResolver: MockedObject<AccountPathResolverService>;
+  let accountInfoService: MockedObject<AccountInfoService>;
+  let organizationReadyService: MockedObject<OrganizationReadyService>;
 
   const mockEntityId = 'entity-123';
   const mockKind = 'Account';
@@ -93,7 +94,7 @@ describe('NodeContextProcessingServiceImpl', () => {
   });
 
   afterEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('processNodeContext', () => {

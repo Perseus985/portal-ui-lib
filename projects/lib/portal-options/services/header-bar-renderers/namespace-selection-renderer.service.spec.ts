@@ -3,8 +3,9 @@ import { TestBed } from '@angular/core/testing';
 import { AuthService, LuigiCoreService } from '@openmfp/portal-ui-lib';
 import { ResourceService } from '@platform-mesh/portal-ui-lib/services';
 import { of } from 'rxjs';
+import { MockedObject } from 'vitest';
 
-jest.mock('@ui5/webcomponents/dist/ComboBox.js', () => ({}), { virtual: true });
+vi.mock('@ui5/webcomponents/dist/ComboBox.js', () => ({}));
 
 function getChildrenByTag(el: Element, tag: string): Element[] {
   return Array.from(el.children).filter((c) => c.tagName.toLowerCase() === tag);
@@ -12,22 +13,22 @@ function getChildrenByTag(el: Element, tag: string): Element[] {
 
 describe('NamespaceSelectionRendererService', () => {
   let service: NamespaceSelectionRendererService;
-  let mockResourceService: jest.Mocked<ResourceService>;
-  let mockAuthService: jest.Mocked<AuthService>;
-  let mockLuigiCoreService: jest.Mocked<LuigiCoreService>;
+  let mockResourceService: MockedObject<ResourceService>;
+  let mockAuthService: MockedObject<AuthService>;
+  let mockLuigiCoreService: MockedObject<LuigiCoreService>;
 
   beforeEach(() => {
     const resourceServiceMock = {
-      list: jest.fn(),
-    } as jest.Mocked<Partial<ResourceService>>;
+      list: vi.fn(),
+    } as any;
 
     const authServiceMock = {
-      getToken: jest.fn(),
-    } as jest.Mocked<Partial<AuthService>>;
+      getToken: vi.fn(),
+    };
 
     const luigiCoreServiceMock = {
-      navigation: jest.fn(),
-    } as any;
+      navigation: vi.fn(),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -39,9 +40,13 @@ describe('NamespaceSelectionRendererService', () => {
     });
 
     service = TestBed.inject(NamespaceSelectionRendererService);
-    mockResourceService = TestBed.inject(ResourceService) as jest.Mocked<ResourceService>;
-    mockAuthService = TestBed.inject(AuthService) as jest.Mocked<AuthService>;
-    mockLuigiCoreService = TestBed.inject(LuigiCoreService) as jest.Mocked<LuigiCoreService>;
+    mockResourceService = TestBed.inject(
+      ResourceService,
+    ) as MockedObject<ResourceService>;
+    mockAuthService = TestBed.inject(AuthService) as MockedObject<AuthService>;
+    mockLuigiCoreService = TestBed.inject(
+      LuigiCoreService,
+    ) as MockedObject<LuigiCoreService>;
   });
 
   it('should render namespace combobox when namespaced node is present and navigate on change', async () => {
@@ -64,7 +69,7 @@ describe('NamespaceSelectionRendererService', () => {
       ]),
     );
 
-    const navigateMock = jest.fn();
+    const navigateMock = vi.fn();
     (mockLuigiCoreService.navigation as any).mockReturnValue({
       navigate: navigateMock,
     });
@@ -130,7 +135,7 @@ describe('NamespaceSelectionRendererService', () => {
   });
 
   it('should handle list errors gracefully and log error with no extra items added', async () => {
-    const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     const portalConfig: any = {
       portalContext: { crdGatewayApiUrl: 'https://api.example.com/graphql' },
@@ -215,6 +220,198 @@ describe('NamespaceSelectionRendererService', () => {
     const texts = items.map((i) => i.getAttribute('text'));
 
     expect(texts).toEqual(['ns1']);
+
+    Object.defineProperty(window, 'location', {
+      value: { pathname: origPathname },
+    });
+  });
+
+  it('should not navigate when change event has no target.value (undefined) -> trimmed to empty', async () => {
+    const origPathname = window.location.pathname;
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/ns1/workloads' },
+      writable: true,
+    });
+
+    const portalConfig: any = {
+      portalContext: { crdGatewayApiUrl: 'https://api.example.com/graphql' },
+    };
+
+    mockAuthService.getToken.mockReturnValue('token');
+    mockResourceService.list.mockReturnValue(
+      of([{ metadata: { name: 'ns1' } } as any]),
+    );
+
+    const navigateMock = vi.fn();
+    (mockLuigiCoreService.navigation as any).mockReturnValue({
+      navigate: navigateMock,
+    });
+
+    const renderer = service.create(portalConfig);
+    const container = document.createElement('div');
+    const nodeItems = [
+      {
+        label: 'Workloads',
+        node: {
+          navigationContext: 'workloads',
+          context: { resourceDefinition: { scope: 'Namespaced' } },
+        },
+      },
+    ] as any;
+
+    renderer(container, nodeItems, () => {});
+
+    const cb = getChildrenByTag(container, 'ui5-combobox')[0] as HTMLElement;
+
+    const ev = new Event('change');
+    Object.defineProperty(ev, 'target', { value: {} });
+    cb.dispatchEvent(ev);
+
+    expect(navigateMock).not.toHaveBeenCalled();
+
+    Object.defineProperty(window, 'location', {
+      value: { pathname: origPathname },
+    });
+  });
+
+  it('should not navigate when change event value is whitespace only', async () => {
+    const origPathname = window.location.pathname;
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/ns1/workloads' },
+      writable: true,
+    });
+
+    const portalConfig: any = {
+      portalContext: { crdGatewayApiUrl: 'https://api.example.com/graphql' },
+    };
+
+    mockAuthService.getToken.mockReturnValue('token');
+    mockResourceService.list.mockReturnValue(
+      of([{ metadata: { name: 'ns1' } } as any]),
+    );
+
+    const navigateMock = vi.fn();
+    (mockLuigiCoreService.navigation as any).mockReturnValue({
+      navigate: navigateMock,
+    });
+
+    const renderer = service.create(portalConfig);
+    const container = document.createElement('div');
+    const nodeItems = [
+      {
+        label: 'Workloads',
+        node: {
+          navigationContext: 'workloads',
+          context: { resourceDefinition: { scope: 'Namespaced' } },
+        },
+      },
+    ] as any;
+
+    renderer(container, nodeItems, () => {});
+
+    const cb = getChildrenByTag(container, 'ui5-combobox')[0] as HTMLElement;
+
+    const ev = new Event('change');
+    Object.defineProperty(ev, 'target', { value: { value: '   ' } });
+    cb.dispatchEvent(ev);
+
+    expect(navigateMock).not.toHaveBeenCalled();
+
+    Object.defineProperty(window, 'location', {
+      value: { pathname: origPathname },
+    });
+  });
+
+  it('should return null namespaceName when namespaced node is first segment (getNamespaceNodeName index === 0)', async () => {
+    const origPathname = window.location.pathname;
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/workloads' },
+      writable: true,
+    });
+
+    const portalConfig: any = {
+      portalContext: { crdGatewayApiUrl: 'https://api.example.com/graphql' },
+    };
+
+    mockAuthService.getToken.mockReturnValue('token');
+    mockResourceService.list.mockReturnValue(
+      of([
+        { metadata: { name: 'ns1' } } as any,
+        { metadata: { name: 'ns2' } } as any,
+      ]),
+    );
+
+    const navigateMock = vi.fn();
+    (mockLuigiCoreService.navigation as any).mockReturnValue({
+      navigate: navigateMock,
+    });
+
+    const renderer = service.create(portalConfig);
+    const container = document.createElement('div');
+    const nodeItems = [
+      {
+        label: 'Workloads',
+        node: {
+          navigationContext: 'workloads',
+          context: { resourceDefinition: { scope: 'Namespaced' } },
+        },
+      },
+    ] as any;
+
+    renderer(container, nodeItems, () => {});
+
+    const cb = getChildrenByTag(container, 'ui5-combobox')[0] as HTMLElement;
+
+    // namespaceName null => value не выставится
+    expect(cb.getAttribute('value')).toBeNull();
+
+    // и смена не должна навигировать, т.к. replacePathSegment(name=null) early-return
+    const ev = new Event('change');
+    Object.defineProperty(ev, 'target', { value: { value: 'ns2' } });
+    cb.dispatchEvent(ev);
+
+    expect(navigateMock).not.toHaveBeenCalled();
+
+    Object.defineProperty(window, 'location', {
+      value: { pathname: origPathname },
+    });
+  });
+
+  it('should cache namespaceResources$ so ResourceService.list is called only once across multiple renders', async () => {
+    const origPathname = window.location.pathname;
+    Object.defineProperty(window, 'location', {
+      value: { pathname: '/ns1/workloads' },
+      writable: true,
+    });
+
+    const portalConfig: any = {
+      portalContext: { crdGatewayApiUrl: 'https://api.example.com/graphql' },
+    };
+
+    mockAuthService.getToken.mockReturnValue('token');
+    mockResourceService.list.mockReturnValue(
+      of([{ metadata: { name: 'ns1' } } as any]),
+    );
+
+    const renderer = service.create(portalConfig);
+
+    const nodeItems = [
+      {
+        label: 'Workloads',
+        node: {
+          navigationContext: 'workloads',
+          context: { resourceDefinition: { scope: 'Namespaced' } },
+        },
+      },
+    ] as any;
+
+    const container1 = document.createElement('div');
+    const container2 = document.createElement('div');
+
+    renderer(container1, nodeItems, () => {});
+    renderer(container2, nodeItems, () => {});
+
+    expect(mockResourceService.list).toHaveBeenCalledTimes(1);
 
     Object.defineProperty(window, 'location', {
       value: { pathname: origPathname },
