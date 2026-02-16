@@ -41,8 +41,13 @@ In order to use the generic list view, you need to adjust the node’s   `conten
       - `"logoUrl"`: resource type logo shown in the view header
       - view definitions for the corresponding views
         - `"listView"`: contains `"fields"` definitions that will be translated to the columns of the table list view, `"label"` corresponds to
-          the column name, whereas `"property"` is a json path of the property of a resource to be read. Fields can be grouped together using the `"group"` property to display related information in a single column. `"uiSettings"` allows you to customize how field values are rendered (format, actions, and styling) in both list and detail views.
-        - `"detailView"`: similarly describes the fields which are to show up on the detailed view. Supports field grouping for compact display of related data. Also you can configure`showDownloadKubeConfig` to enable/disable download kubeconfig button. By default it false.
+          the column name, whereas `"property"` is a json path of the property of a resource to be read. Fields can be grouped together using the `"group"` property to display related information in a single column. `"uiSettings"` allows you to customize how field values are rendered (format, actions, and styling) in both list and detail views. Also supports:
+          - `"resourceTitle"`: A complete `FieldDefinition` object that will be used to render the title. Supports all field definition features like `uiSettings`, `value`, etc. If not provided, a default title will be generated from the plural form of the resource.
+          - `"resourceDescription"`: A complete `FieldDefinition` object that will be used to render the subtitle description. Supports all field definition features like `uiSettings`, `value`, etc. If not provided, a default description will be generated.
+        - `"detailView"`: similarly describes the fields which are to show up on the detailed view. Supports field grouping for compact display of related data. Also you can configure:
+          - `showDownloadKubeconfig`: enable/disable download kubeconfig button. By default it false.
+          - `resourceTitle`: A complete `FieldDefinition` object that will be used to render the title. Supports all field definition properties including `property`, `jsonPathExpression`, `uiSettings`, etc. If not provided, a default title will be generated from the resource ID or display name.
+          - `resourceDescription`: A complete `FieldDefinition` object that will be used to render the subtitle description. Supports all field definition properties including `property`, `jsonPathExpression`, `uiSettings`, etc. If not provided, a default description will be generated.
         - `"createView`: section additionally provides possibility to add the `"required"` flag to the filed definition,
           indicating that the field needs to be provided while creating an instance of that resource, with the `"values": ["account"]`
           there is a possibility to provide a list of values to select from. Also, it's possible to specify a GraphQL query to retrieve a dynamic list of values to select from using the `"dynamicValuesDefinition"`. You need to provide `"gqlQuery"` and `"operation"`, as well as `"key"` - a JSON path to the property that will be used as the displayed value, and `"value"` — a JSON path to the actual value.
@@ -64,6 +69,7 @@ Each field definition supports the following properties:
 - `"jsonPathExpression"`: Alternative JSONPath expression for complex data access (takes precedence over `property`)
 - `"required"`: Boolean flag indicating if the field is mandatory (for create views)
 - `"values"`: Array of predefined values for selection
+- `"value"': Static value for field
 - `"group"`: Object for grouping related fields together:
   - `"name"`: Unique identifier for the group
   - `"label"`: Display name for the group
@@ -135,6 +141,12 @@ This example demonstrates various features including:
                 "logoUrl": "https://www.kcp.io/icons/logo.svg",
                 "resourceImageProperty": "spec.image",
                 "listView": {
+                  "resourceTitle": {
+                    "value": "Accounts"
+                  },
+                  "resourceDescription": {
+                    "value": "This page displays all accounts in your environment. You can create, edit, or delete accounts as needed."
+                  },
                   "fields": [
                     {
                       "property": "metadata.imgUrl",
@@ -193,6 +205,12 @@ This example demonstrates various features including:
                   ]
                 },
                 "detailView": {
+                  "resourceTitle": {
+                    "property": "spec.displayName"
+                  },
+                  "resourceDescription": {
+                    "property": "spec.description"
+                  },
                   "fields": [
                     {
                       "label": "Description",
@@ -505,6 +523,13 @@ In case the detail view is an independent node provide context data:
       "ui": {
         "logoUrl": "https://www.kcp.io/icons/logo.svg",
         "detailView": {
+          "resourceTitle": {
+            "property": "spec.displayName"
+          },
+          "resourceDescription": {
+            "property": "spec.description"
+          },
+          "showDownloadKubeconfig": true,
           "fields": [
             {
               "label": "Description",

@@ -26,12 +26,10 @@ import { getResourceValueByJsonPath } from '@platform-mesh/portal-ui-lib/utils/u
 })
 export class ValueCellComponent {
   fieldDefinition = input.required<FieldDefinition>();
-  resource = input.required<Resource>();
+  resource = input<Resource>();
   LuigiClient = input.required<LuigiClient>();
 
-  value = computed(() =>
-    getResourceValueByJsonPath(this.resource(), this.fieldDefinition()),
-  );
+  value = computed(() => this.getValue());
 
   uiSettings = computed(() => this.fieldDefinition().uiSettings);
   displayAs = computed(() => this.uiSettings()?.displayAs);
@@ -58,6 +56,18 @@ export class ValueCellComponent {
   toggleVisibility(e: Event): void {
     e.stopPropagation();
     this.isVisible.set(!this.isVisible());
+  }
+
+  private getValue() {
+    const resource = this.resource();
+    if (resource) {
+      return (
+        getResourceValueByJsonPath(resource, this.fieldDefinition()) ??
+        this.fieldDefinition().value
+      );
+    }
+
+    return this.fieldDefinition().value;
   }
 
   private normalizeBoolean(value: unknown): boolean | undefined {

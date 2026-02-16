@@ -857,4 +857,305 @@ describe('ValueCellComponent', () => {
       expect(instance.checkValidUrl('https://example.com')).toBe(true);
     });
   });
+
+  describe('CSS customization', () => {
+    it('should compute cssCustomization from uiSettings', () => {
+      const { component } = makeComponent('test-value', {
+        uiSettings: {
+          cssCustomization: {
+            backgroundColor: 'red',
+            color: 'white',
+          },
+        },
+      });
+
+      expect(component.cssCustomization()).toEqual({
+        backgroundColor: 'red',
+        color: 'white',
+      });
+    });
+
+    it('should compute cssRules from value and uiSettings', () => {
+      const { component } = makeComponent('test-value', {
+        uiSettings: {
+          cssRules: [
+            {
+              if: { condition: 'equals', value: 'test-value' },
+              styles: { color: 'green' },
+            },
+          ],
+        },
+      });
+
+      const cssRules = component.cssRules();
+      expect(cssRules).toBeDefined();
+    });
+
+    it('should merge cssCustomization and cssRules in cssStyles', () => {
+      const { component } = makeComponent('test-value', {
+        uiSettings: {
+          cssCustomization: {
+            backgroundColor: 'red',
+          },
+          cssRules: [
+            {
+              if: { condition: 'equals', value: 'test-value' },
+              styles: { color: 'green' },
+            },
+          ],
+        },
+      });
+
+      const cssStyles = component.cssStyles();
+      expect(cssStyles).toBeDefined();
+      expect(cssStyles.backgroundColor).toBe('red');
+    });
+
+    it('should return empty object when cssCustomization is undefined', () => {
+      const { component } = makeComponent('test-value');
+
+      expect(component.cssCustomization()).toBeUndefined();
+    });
+  });
+
+  describe('tooltipIcon functionality', () => {
+    it('should compute tooltipIcon from uiSettings', () => {
+      const { component } = makeComponent('test-value', {
+        uiSettings: {
+          tooltipIcon: 'information',
+        },
+      });
+
+      expect(component.tooltipIcon()).toBe('information');
+    });
+
+    it('should return undefined when tooltipIcon is not set', () => {
+      const { component } = makeComponent('test-value');
+
+      expect(component.tooltipIcon()).toBeUndefined();
+    });
+
+    it('should render tooltip icon when displayAs is tooltip', () => {
+      const { fixture } = makeComponent('tooltip text', {
+        uiSettings: {
+          displayAs: 'tooltip',
+          tooltipIcon: 'information',
+        },
+      });
+      const compiled = fixture.nativeElement;
+
+      const tooltipIcon = compiled.querySelector('ui5-icon[name="information"]');
+      expect(tooltipIcon).toBeTruthy();
+    });
+
+    it('should use default hint icon when tooltipIcon is not specified', () => {
+      const { fixture } = makeComponent('tooltip text', {
+        uiSettings: {
+          displayAs: 'tooltip',
+        },
+      });
+      const compiled = fixture.nativeElement;
+
+      const tooltipIcon = compiled.querySelector('ui5-icon[name="hint"]');
+      expect(tooltipIcon).toBeTruthy();
+    });
+  });
+
+  describe('value without resource', () => {
+    it('should use fieldDefinition value when resource is not provided', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const field: FieldDefinition = {
+        property: 'spec.value',
+        value: 'static-value',
+      };
+
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('static-value');
+    });
+
+    it('should prioritize resource value over fieldDefinition value', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const resource: Resource = {
+        metadata: { name: 'test-resource' },
+        spec: { value: 'resource-value' },
+      } as any;
+
+      const field: FieldDefinition = {
+        property: 'spec.value',
+        value: 'static-value',
+      };
+
+      fixture.componentRef.setInput('resource', resource);
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('resource-value');
+    });
+
+    it('should use fieldDefinition value as fallback when resource value is null', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const resource: Resource = {
+        metadata: { name: 'test-resource' },
+        spec: { value: null },
+      } as any;
+
+      const field: FieldDefinition = {
+        property: 'spec.value',
+        value: 'fallback-value',
+      };
+
+      fixture.componentRef.setInput('resource', resource);
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('fallback-value');
+    });
+
+    it('should use fieldDefinition value as fallback when resource value is undefined', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const resource: Resource = {
+        metadata: { name: 'test-resource' },
+        spec: {},
+      } as any;
+
+      const field: FieldDefinition = {
+        property: 'spec.nonExistent',
+        value: 'fallback-value',
+      };
+
+      fixture.componentRef.setInput('resource', resource);
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('fallback-value');
+    });
+
+    it('should use fieldDefinition value as fallback when property path does not exist in resource', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const resource: Resource = {
+        metadata: { name: 'test-resource' },
+        spec: { otherField: 'other-value' },
+      } as any;
+
+      const field: FieldDefinition = {
+        property: 'spec.missingField',
+        value: 'fallback-value',
+      };
+
+      fixture.componentRef.setInput('resource', resource);
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('fallback-value');
+    });
+
+    it('should handle fieldDefinition value with uiSettings', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const field: FieldDefinition = {
+        property: 'spec.value',
+        value: 'true',
+        uiSettings: { displayAs: 'boolIcon' },
+      };
+
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('true');
+      expect(component.isBoolLike()).toBe(true);
+      expect(component.boolValue()).toBe(true);
+    });
+
+    it('should handle fieldDefinition value with copy button', () => {
+      const writeTextSpy = vi.fn().mockResolvedValue(undefined);
+      Object.assign(navigator, { clipboard: { writeText: writeTextSpy } });
+
+      const showAlertSpy = vi.fn();
+      const customLuigiClient = createMockLuigiClient(showAlertSpy);
+      mockLuigiClient = customLuigiClient;
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const field: FieldDefinition = {
+        property: 'spec.value',
+        value: 'copy-me',
+        uiSettings: { withCopyButton: true },
+      };
+
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      const compiled = fixture.nativeElement;
+      const copyButton = compiled.querySelector('ui5-icon[name="copy"]');
+
+      const event = new Event('click');
+      copyButton.dispatchEvent(event);
+      fixture.detectChanges();
+
+      expect(writeTextSpy).toHaveBeenCalledWith('copy-me');
+      expect(showAlertSpy).toHaveBeenCalledWith({
+        text: 'Copied to clipboard',
+        type: 'success',
+        closeAfter: 2000,
+      });
+    });
+
+    it('should handle fieldDefinition value with jsonPathExpression', () => {
+      mockLuigiClient = createMockLuigiClient();
+      fixture = TestBed.createComponent(ValueCellComponent);
+      component = fixture.componentInstance;
+
+      const resource: Resource = {
+        metadata: { name: 'test-resource' },
+        spec: { nested: { value: 'nested-value' } },
+      } as any;
+
+      const field: FieldDefinition = {
+        property: 'spec.value',
+        jsonPathExpression: '$.spec.nested.value',
+        value: 'fallback-value',
+      };
+
+      fixture.componentRef.setInput('resource', resource);
+      fixture.componentRef.setInput('fieldDefinition', field);
+      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
+
+      fixture.detectChanges();
+
+      expect(component.value()).toBe('nested-value');
+    });
+  });
 });

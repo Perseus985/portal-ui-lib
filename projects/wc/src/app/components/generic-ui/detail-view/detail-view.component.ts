@@ -30,7 +30,7 @@ import {
   DynamicPageTitle,
 } from '@fundamental-ngx/ui5-webcomponents-fiori';
 import { LuigiClient } from '@luigi-project/client/luigi-element';
-import { Resource } from '@platform-mesh/portal-ui-lib/models';
+import { FieldDefinition, Resource } from '@platform-mesh/portal-ui-lib/models';
 import {
   AccountInfoService,
   ErrorHandlerService,
@@ -96,6 +96,12 @@ export class DetailView {
       false,
   );
   isDownloadingKubeConfig = signal(false);
+  resourceTitleDefinition = computed(
+    () => this.resourceDefinition()?.ui?.detailView?.resourceTitle,
+  );
+  resourceDescriptionDefinition = computed(
+    () => this.resourceDefinition()?.ui?.detailView?.resourceDescription,
+  );
 
   constructor() {
     effect(() => {
@@ -105,7 +111,7 @@ export class DetailView {
 
   private readResource(): void {
     const resourceDefinition = this.getResourceDefinition();
-    const fields = generateGraphQLFields(this.resourceFields());
+    const fields = this.getDetailViewQueryFields();
 
     const params: ResourceRequestParams = {
       kind: resourceDefinition.kind,
@@ -298,6 +304,25 @@ export class DetailView {
     }
 
     return resourceDefinition;
+  }
+
+  private getDetailViewQueryFields() {
+    const resourceDefinition = this.getResourceDefinition();
+    const additionalFields: FieldDefinition[] = [];
+
+    if (resourceDefinition.ui?.detailView?.resourceDescription) {
+      additionalFields.push(
+        resourceDefinition.ui.detailView.resourceDescription,
+      );
+    }
+
+    if (resourceDefinition.ui?.detailView?.resourceTitle) {
+      additionalFields.push(resourceDefinition.ui.detailView.resourceTitle);
+    }
+
+    return generateGraphQLFields(
+      this.resourceFields().concat(additionalFields),
+    );
   }
 
   private getResourceId() {

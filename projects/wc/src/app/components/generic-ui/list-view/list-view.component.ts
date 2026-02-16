@@ -93,7 +93,10 @@ export class ListView {
   context = input.required<ResourceNodeContext>();
 
   resources = signal<Resource[]>([]);
-  heading = computed(
+  resourceTitleDefinition = computed(
+    () => this.resourceDefinition()?.ui?.listView?.resourceTitle,
+  );
+  defaultHeading = computed(
     () =>
       `${this.resourceDefinition()?.plural.charAt(0).toUpperCase()}${this.resourceDefinition()?.plural.slice(1)}`,
   );
@@ -103,6 +106,9 @@ export class ListView {
   );
   viewColumns = computed(() => processFields(this.columns()));
   readyCondition = computed(() => this.resourceDefinition()?.readyCondition);
+  listDescriptionDefinition = computed(
+    () => this.resourceDefinition()?.ui?.listView?.resourceDescription,
+  );
   hasUiCreateViewFields = computed(
     () => !!this.resourceDefinition()?.ui?.createView?.fields?.length,
   );

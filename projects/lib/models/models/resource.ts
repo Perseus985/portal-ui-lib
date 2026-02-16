@@ -1,5 +1,8 @@
 import { Condition, ObjectMeta } from 'kubernetes-types/meta/v1';
 
+
+
+
 export type TransformType =
   | 'uppercase'
   | 'lowercase'
@@ -42,6 +45,7 @@ export interface FieldDefinition {
   jsonPathExpression?: string;
   required?: boolean;
   values?: string[];
+  value?: string;
   group?: {
     name: string;
     label?: string;
@@ -98,6 +102,8 @@ export interface ResourceDefinition {
 
 interface UiView {
   fields: FieldDefinition[];
+  resourceDescription?: FieldDefinition;
+  resourceTitle?: FieldDefinition;
 }
 
 export interface UIDefinition {

@@ -3,6 +3,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LuigiCoreService } from '@openmfp/portal-ui-lib';
 import {
+  FieldDefinition,
   ResourceDefinition,
   ResourceSubscriptionResult,
 } from '@platform-mesh/portal-ui-lib/models';
@@ -291,7 +292,7 @@ describe('ListViewComponent', () => {
 
     newFixture.detectChanges();
 
-    expect(newComponent.heading()).toBe('Clusters');
+    expect(newComponent.defaultHeading()).toBe('Clusters');
   });
 
   it('should handle empty plural in heading', () => {
@@ -313,7 +314,7 @@ describe('ListViewComponent', () => {
 
     newFixture.detectChanges();
 
-    expect(newComponent.heading()).toBe('');
+    expect(newComponent.defaultHeading()).toBe('');
   });
 
   it('should handle single character plural in heading', () => {
@@ -335,7 +336,7 @@ describe('ListViewComponent', () => {
 
     newFixture.detectChanges();
 
-    expect(newComponent.heading()).toBe('A');
+    expect(newComponent.defaultHeading()).toBe('A');
   });
 
   it('should handle resource service list error', () => {
@@ -1297,6 +1298,105 @@ describe('ListViewComponent', () => {
         newFixture.detectChanges();
 
         expect(newComponent.columns().length).toBe(2);
+      });
+
+      it('should return resourceTitle when defined', () => {
+        const newFixture = TestBed.createComponent(ListView);
+        const newComponent = newFixture.componentInstance;
+
+        const resourceTitle: any = {
+          property: 'spec.displayName',
+        };
+
+        newComponent.context = (() => ({
+          resourceDefinition: {
+            plural: 'clusters',
+            kind: 'Cluster',
+            group: 'core.k8s.io',
+            ui: {
+              listView: {
+                fields: [],
+                resourceTitle,
+              },
+            },
+          },
+        })) as any;
+
+        newComponent.LuigiClient = (() => ({
+          linkManager: () => ({
+            fromContext: vi.fn().mockReturnThis(),
+            navigate: vi.fn(),
+            withParams: vi.fn().mockReturnThis(),
+          }),
+          getNodeParams: vi.fn(),
+        })) as any;
+
+        newFixture.detectChanges();
+
+        expect(newComponent.resourceTitleDefinition()).toEqual(resourceTitle);
+      });
+
+      it('should return undefined when resourceTitle is not defined', () => {
+        const newFixture = TestBed.createComponent(ListView);
+        const newComponent = newFixture.componentInstance;
+
+        newComponent.context = (() => ({
+          resourceDefinition: {
+            plural: 'clusters',
+            kind: 'Cluster',
+            group: 'core.k8s.io',
+            ui: {
+              listView: {
+                fields: [],
+              },
+            },
+          },
+        })) as any;
+
+        newComponent.LuigiClient = (() => ({
+          linkManager: () => ({
+            fromContext: vi.fn().mockReturnThis(),
+            navigate: vi.fn(),
+            withParams: vi.fn().mockReturnThis(),
+          }),
+          getNodeParams: vi.fn(),
+        })) as any;
+
+        newFixture.detectChanges();
+
+        expect(newComponent.resourceTitleDefinition()).toBeUndefined();
+      });
+
+      it('should use defaultHeading when resourceTitle is not defined', () => {
+        const newFixture = TestBed.createComponent(ListView);
+        const newComponent = newFixture.componentInstance;
+
+        newComponent.context = (() => ({
+          resourceDefinition: {
+            plural: 'clusters',
+            kind: 'Cluster',
+            group: 'core.k8s.io',
+            ui: {
+              listView: {
+                fields: [],
+              },
+            },
+          },
+        })) as any;
+
+        newComponent.LuigiClient = (() => ({
+          linkManager: () => ({
+            fromContext: vi.fn().mockReturnThis(),
+            navigate: vi.fn(),
+            withParams: vi.fn().mockReturnThis(),
+          }),
+          getNodeParams: vi.fn(),
+        })) as any;
+
+        newFixture.detectChanges();
+
+        expect(newComponent.resourceTitleDefinition()).toBeUndefined();
+        expect(newComponent.defaultHeading()).toBe('Clusters');
       });
     });
   });
