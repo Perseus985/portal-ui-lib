@@ -1,4 +1,4 @@
-import { DetailViewComponent } from './detail-view.component';
+import { DetailView } from './detail-view.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EnvConfigService } from '@openmfp/portal-ui-lib';
@@ -14,8 +14,8 @@ import { MockedObject } from 'vitest';
 import { mock } from 'vitest-mock-extended';
 
 describe('DetailViewComponent', () => {
-  let component: DetailViewComponent;
-  let fixture: ComponentFixture<DetailViewComponent>;
+  let component: DetailView;
+  let fixture: ComponentFixture<DetailView>;
   let mockResourceService: any;
   let mockGatewayService: any;
   let envConfigServiceMock: MockedObject<EnvConfigService>;
@@ -73,11 +73,11 @@ describe('DetailViewComponent', () => {
         { provide: EnvConfigService, useValue: envConfigServiceMock },
         { provide: ErrorHandlerService, useValue: errorHandlerServiceMock },
       ],
-    }).overrideComponent(DetailViewComponent, {
+    }).overrideComponent(DetailView, {
       set: { template: '<div></div>' },
     });
 
-    fixture = TestBed.createComponent(DetailViewComponent);
+    fixture = TestBed.createComponent(DetailView);
     component = fixture.componentInstance;
 
     component.context = (() => ({
@@ -142,7 +142,7 @@ describe('DetailViewComponent', () => {
   });
 
   it('should compute showDownloadKubeconfig as true when enabled in definition', () => {
-    const newFixture = TestBed.createComponent(DetailViewComponent);
+    const newFixture = TestBed.createComponent(DetailView);
     const newComponent = newFixture.componentInstance;
 
     newComponent.context = (() => ({
@@ -186,7 +186,7 @@ describe('DetailViewComponent', () => {
   });
 
   it('should compute showDownloadKubeconfig as false when detailView is missing', () => {
-    const newFixture = TestBed.createComponent(DetailViewComponent);
+    const newFixture = TestBed.createComponent(DetailView);
     const newComponent = newFixture.componentInstance;
 
     newComponent.context = (() => ({
@@ -350,7 +350,7 @@ describe('DetailViewComponent', () => {
 
   it('should call resource service with correct parameters for account kind', () => {
     vi.clearAllMocks();
-    const newFixture = TestBed.createComponent(DetailViewComponent);
+    const newFixture = TestBed.createComponent(DetailView);
     const newComponent = newFixture.componentInstance;
 
     newComponent.context = (() => ({
@@ -399,7 +399,7 @@ describe('DetailViewComponent', () => {
       throwError(() => new Error('Read failed')),
     );
 
-    const newFixture = TestBed.createComponent(DetailViewComponent);
+    const newFixture = TestBed.createComponent(DetailView);
     const newComponent = newFixture.componentInstance;
 
     newComponent.context = (() => ({
@@ -447,7 +447,7 @@ describe('DetailViewComponent', () => {
 
     it('should handle undefined resourceId in readResource method', () => {
       vi.clearAllMocks();
-      const newFixture = TestBed.createComponent(DetailViewComponent);
+      const newFixture = TestBed.createComponent(DetailView);
       const newComponent = newFixture.componentInstance;
 
       newComponent.context = (() => ({
@@ -495,7 +495,7 @@ describe('DetailViewComponent', () => {
 
       mockResourceService.read.mockReturnValue(of(terminatingResource));
 
-      const newFixture = TestBed.createComponent(DetailViewComponent);
+      const newFixture = TestBed.createComponent(DetailView);
       const newComponent = newFixture.componentInstance;
 
       newComponent.context = component.context;
@@ -510,7 +510,7 @@ describe('DetailViewComponent', () => {
 
     it('should handle undefined parentNavigationContext in navigateToParent method', () => {
       vi.clearAllMocks();
-      const newFixture = TestBed.createComponent(DetailViewComponent);
+      const newFixture = TestBed.createComponent(DetailView);
       const newComponent = newFixture.componentInstance;
 
       newComponent.context = (() => ({
@@ -553,7 +553,7 @@ describe('DetailViewComponent', () => {
 
     it('should handle empty parentNavigationContexts array in navigateToParent method', () => {
       vi.clearAllMocks();
-      const newFixture = TestBed.createComponent(DetailViewComponent);
+      const newFixture = TestBed.createComponent(DetailView);
       const newComponent = newFixture.componentInstance;
 
       newComponent.context = (() => ({
@@ -596,7 +596,7 @@ describe('DetailViewComponent', () => {
 
     it('should handle undefined resourceDefinition in getResourceDefinition method', () => {
       vi.clearAllMocks();
-      const newFixture = TestBed.createComponent(DetailViewComponent);
+      const newFixture = TestBed.createComponent(DetailView);
       const newComponent = newFixture.componentInstance;
 
       newComponent.context = (() => ({
@@ -627,6 +627,220 @@ describe('DetailViewComponent', () => {
       });
     });
   });
+
+  describe('delete method', () => {
+    it('should call delete with readFromParentKcpPath true for Account kind', () => {
+      vi.clearAllMocks();
+      mockResourceService.delete = vi.fn().mockReturnValue(of({}));
+
+      const newFixture = TestBed.createComponent(DetailView);
+      const newComponent = newFixture.componentInstance;
+
+      newComponent.context = (() => ({
+        resourceId: 'test-account',
+        token: 'abc123',
+        resourceDefinition: {
+          kind: 'Account',
+          group: 'core.k8s.io',
+          version: 'v1alpha1',
+          ui: {
+            detailView: {
+              fields: [],
+            },
+          },
+        },
+        entityName: 'test-account',
+        parentNavigationContexts: ['project'],
+      })) as any;
+
+      newComponent.LuigiClient = (() => ({
+        linkManager: () => ({
+          fromContext: vi.fn().mockReturnThis(),
+          navigate: vi.fn(),
+          withParams: vi.fn().mockReturnThis(),
+        }),
+        uxManager: () => ({
+          showAlert: vi.fn(),
+        }),
+        getNodeParams: vi.fn(),
+      })) as any;
+
+      newFixture.detectChanges();
+
+      const resource: any = { metadata: { name: 'test-account' } };
+      newComponent.delete(resource);
+
+      expect(mockResourceService.delete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: { name: 'test-account' },
+        }),
+        expect.objectContaining({ kind: 'Account' }),
+        expect.any(Object),
+        true,
+      );
+    });
+
+    it('should call delete with readFromParentKcpPath false for non-Account kind', () => {
+      vi.clearAllMocks();
+      mockResourceService.delete = vi.fn().mockReturnValue(of({}));
+
+      const newFixture = TestBed.createComponent(DetailView);
+      const newComponent = newFixture.componentInstance;
+
+      newComponent.context = (() => ({
+        resourceId: 'test-cluster',
+        token: 'abc123',
+        resourceDefinition: {
+          kind: 'Cluster',
+          group: 'core.k8s.io',
+          version: 'v1alpha1',
+          ui: {
+            detailView: {
+              fields: [],
+            },
+          },
+        },
+        entityName: 'test-cluster',
+        parentNavigationContexts: ['project'],
+      })) as any;
+
+      newComponent.LuigiClient = (() => ({
+        linkManager: () => ({
+          fromContext: vi.fn().mockReturnThis(),
+          navigate: vi.fn(),
+          withParams: vi.fn().mockReturnThis(),
+        }),
+        uxManager: () => ({
+          showAlert: vi.fn(),
+        }),
+        getNodeParams: vi.fn(),
+      })) as any;
+
+      newFixture.detectChanges();
+
+      const resource: any = { metadata: { name: 'test-cluster' } };
+      newComponent.delete(resource);
+
+      expect(mockResourceService.delete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: { name: 'test-cluster' },
+        }),
+        expect.objectContaining({ kind: 'Cluster' }),
+        expect.any(Object),
+        false,
+      );
+    });
+  });
+
+  describe('update method', () => {
+    it('should call update with readFromParentKcpPath true for Account kind', () => {
+      vi.clearAllMocks();
+      mockResourceService.update = vi
+        .fn()
+        .mockReturnValue(of({ name: 'updated-resource' }));
+
+      const newFixture = TestBed.createComponent(DetailView);
+      const newComponent = newFixture.componentInstance;
+
+      newComponent.context = (() => ({
+        resourceId: 'test-account',
+        token: 'abc123',
+        resourceDefinition: {
+          kind: 'Account',
+          group: 'core.k8s.io',
+          version: 'v1alpha1',
+          ui: {
+            detailView: {
+              fields: [],
+            },
+          },
+        },
+        entityName: 'test-account',
+        parentNavigationContexts: ['project'],
+      })) as any;
+
+      newComponent.LuigiClient = (() => ({
+        linkManager: () => ({
+          fromContext: vi.fn().mockReturnThis(),
+          navigate: vi.fn(),
+          withParams: vi.fn().mockReturnThis(),
+        }),
+        uxManager: () => ({
+          showAlert: vi.fn(),
+        }),
+        getNodeParams: vi.fn(),
+      })) as any;
+
+      newFixture.detectChanges();
+
+      const resource: any = { metadata: { name: 'test-account' } };
+      newComponent.update(resource);
+
+      expect(mockResourceService.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: { name: 'test-account' },
+        }),
+        expect.objectContaining({ kind: 'Account' }),
+        expect.any(Object),
+        true,
+        [],
+      );
+    });
+
+    it('should call update with readFromParentKcpPath false for non-Account kind', () => {
+      vi.clearAllMocks();
+      mockResourceService.update = vi
+        .fn()
+        .mockReturnValue(of({ name: 'updated-resource' }));
+
+      const newFixture = TestBed.createComponent(DetailView);
+      const newComponent = newFixture.componentInstance;
+
+      newComponent.context = (() => ({
+        resourceId: 'test-cluster',
+        token: 'abc123',
+        resourceDefinition: {
+          kind: 'Cluster',
+          group: 'core.k8s.io',
+          version: 'v1alpha1',
+          ui: {
+            detailView: {
+              fields: [],
+            },
+          },
+        },
+        entityName: 'test-cluster',
+        parentNavigationContexts: ['project'],
+      })) as any;
+
+      newComponent.LuigiClient = (() => ({
+        linkManager: () => ({
+          fromContext: vi.fn().mockReturnThis(),
+          navigate: vi.fn(),
+          withParams: vi.fn().mockReturnThis(),
+        }),
+        uxManager: () => ({
+          showAlert: vi.fn(),
+        }),
+        getNodeParams: vi.fn(),
+      })) as any;
+
+      newFixture.detectChanges();
+
+      const resource: any = { metadata: { name: 'test-cluster' } };
+      newComponent.update(resource);
+
+      expect(mockResourceService.update).toHaveBeenCalledWith(
+        expect.objectContaining({
+          metadata: { name: 'test-cluster' },
+        }),
+        expect.objectContaining({ kind: 'Cluster' }),
+        expect.any(Object),
+        false,
+        [],
+      );
+    });
+  });
 });
 
 describe('DetailViewComponent template', () => {
@@ -647,7 +861,7 @@ describe('DetailViewComponent template', () => {
     };
 
     TestBed.configureTestingModule({
-      imports: [DetailViewComponent],
+      imports: [DetailView],
       providers: [
         { provide: ResourceService, useValue: mockResourceService },
         { provide: GatewayService, useValue: mockGatewayService },
@@ -657,13 +871,13 @@ describe('DetailViewComponent template', () => {
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     });
 
-    TestBed.overrideComponent(DetailViewComponent, {
+    TestBed.overrideComponent(DetailView, {
       set: { schemas: [CUSTOM_ELEMENTS_SCHEMA] },
     });
   });
 
   it('should not render download button when disabled', () => {
-    const fixture = TestBed.createComponent(DetailViewComponent);
+    const fixture = TestBed.createComponent(DetailView);
     const component = fixture.componentInstance;
 
     component.context = (() => ({
@@ -709,7 +923,7 @@ describe('DetailViewComponent template', () => {
   });
 
   it('should render download button and call downloadKubeConfig on click when enabled', async () => {
-    const fixture = TestBed.createComponent(DetailViewComponent);
+    const fixture = TestBed.createComponent(DetailView);
     const component = fixture.componentInstance;
 
     component.context = (() => ({
