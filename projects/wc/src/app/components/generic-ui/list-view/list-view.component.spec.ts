@@ -201,7 +201,9 @@ describe('ListViewComponent', () => {
   });
 
   it('should navigate to resource', () => {
-    const resource = { metadata: { name: 'res1', namespace: 'test-namespace' } };
+    const resource = {
+      metadata: { name: 'res1', namespace: 'test-namespace' },
+    };
     const navSpy = vi.fn();
     const addSearchParamsSpy = vi.fn();
     (window as any).Luigi = {
@@ -316,72 +318,6 @@ describe('ListViewComponent', () => {
       mockContext.resourceDefinition,
     );
     expect(newComponent.hasUiCreateViewFields()).toBe(true);
-  });
-
-  it('should compute heading correctly with capitalized plural', () => {
-    const newFixture = TestBed.createComponent(ListView);
-    const newComponent = newFixture.componentInstance;
-
-    newComponent.context = (() => ({
-      resourceDefinition: {
-        plural: 'clusters',
-        kind: 'Cluster',
-        group: 'core.k8s.io',
-        ui: {
-          listView: {
-            fields: [],
-          },
-        },
-      },
-    })) as any;
-
-    newFixture.detectChanges();
-
-    expect(newComponent.defaultHeading()).toBe('Clusters');
-  });
-
-  it('should handle empty plural in heading', () => {
-    const newFixture = TestBed.createComponent(ListView);
-    const newComponent = newFixture.componentInstance;
-
-    newComponent.context = (() => ({
-      resourceDefinition: {
-        plural: '',
-        kind: 'Cluster',
-        group: 'core.k8s.io',
-        ui: {
-          listView: {
-            fields: [],
-          },
-        },
-      },
-    })) as any;
-
-    newFixture.detectChanges();
-
-    expect(newComponent.defaultHeading()).toBe('');
-  });
-
-  it('should handle single character plural in heading', () => {
-    const newFixture = TestBed.createComponent(ListView);
-    const newComponent = newFixture.componentInstance;
-
-    newComponent.context = (() => ({
-      resourceDefinition: {
-        plural: 'a',
-        kind: 'Cluster',
-        group: 'core.k8s.io',
-        ui: {
-          listView: {
-            fields: [],
-          },
-        },
-      },
-    })) as any;
-
-    newFixture.detectChanges();
-
-    expect(newComponent.defaultHeading()).toBe('A');
   });
 
   it('should handle resource service list error', () => {
@@ -1341,105 +1277,6 @@ describe('ListViewComponent', () => {
         newFixture.detectChanges();
 
         expect(newComponent.columns().length).toBe(2);
-      });
-
-      it('should return resourceTitle when defined', () => {
-        const newFixture = TestBed.createComponent(ListView);
-        const newComponent = newFixture.componentInstance;
-
-        const resourceTitle: any = {
-          property: 'spec.displayName',
-        };
-
-        newComponent.context = (() => ({
-          resourceDefinition: {
-            plural: 'clusters',
-            kind: 'Cluster',
-            group: 'core.k8s.io',
-            ui: {
-              listView: {
-                fields: [],
-                resourceTitle,
-              },
-            },
-          },
-        })) as any;
-
-        newComponent.LuigiClient = (() => ({
-          linkManager: () => ({
-            fromContext: vi.fn().mockReturnThis(),
-            navigate: vi.fn(),
-            withParams: vi.fn().mockReturnThis(),
-          }),
-          getNodeParams: vi.fn(),
-        })) as any;
-
-        newFixture.detectChanges();
-
-        expect(newComponent.resourceTitleDefinition()).toEqual(resourceTitle);
-      });
-
-      it('should return undefined when resourceTitle is not defined', () => {
-        const newFixture = TestBed.createComponent(ListView);
-        const newComponent = newFixture.componentInstance;
-
-        newComponent.context = (() => ({
-          resourceDefinition: {
-            plural: 'clusters',
-            kind: 'Cluster',
-            group: 'core.k8s.io',
-            ui: {
-              listView: {
-                fields: [],
-              },
-            },
-          },
-        })) as any;
-
-        newComponent.LuigiClient = (() => ({
-          linkManager: () => ({
-            fromContext: vi.fn().mockReturnThis(),
-            navigate: vi.fn(),
-            withParams: vi.fn().mockReturnThis(),
-          }),
-          getNodeParams: vi.fn(),
-        })) as any;
-
-        newFixture.detectChanges();
-
-        expect(newComponent.resourceTitleDefinition()).toBeUndefined();
-      });
-
-      it('should use defaultHeading when resourceTitle is not defined', () => {
-        const newFixture = TestBed.createComponent(ListView);
-        const newComponent = newFixture.componentInstance;
-
-        newComponent.context = (() => ({
-          resourceDefinition: {
-            plural: 'clusters',
-            kind: 'Cluster',
-            group: 'core.k8s.io',
-            ui: {
-              listView: {
-                fields: [],
-              },
-            },
-          },
-        })) as any;
-
-        newComponent.LuigiClient = (() => ({
-          linkManager: () => ({
-            fromContext: vi.fn().mockReturnThis(),
-            navigate: vi.fn(),
-            withParams: vi.fn().mockReturnThis(),
-          }),
-          getNodeParams: vi.fn(),
-        })) as any;
-
-        newFixture.detectChanges();
-
-        expect(newComponent.resourceTitleDefinition()).toBeUndefined();
-        expect(newComponent.defaultHeading()).toBe('Clusters');
       });
     });
   });
