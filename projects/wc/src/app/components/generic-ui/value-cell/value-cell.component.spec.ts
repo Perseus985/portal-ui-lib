@@ -7,28 +7,18 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { LuigiClient } from '@luigi-project/client/luigi-element';
 import {
   FieldDefinition,
+  GenericResource,
   Resource,
 } from '@platform-mesh/portal-ui-lib/models/models';
-import { Mock } from 'vitest';
 
 describe('ValueCellComponent', () => {
-  let component: ValueCellComponent;
-  let fixture: ComponentFixture<ValueCellComponent>;
-  let mockLuigiClient: LuigiClient;
-
-  const createMockLuigiClient = (showAlertSpy?: Mock<any>): LuigiClient =>
-    ({
-      uxManager: () => ({
-        showAlert: showAlertSpy || vi.fn(),
-      }),
-    }) as any;
+  let component: ValueCellComponent<GenericResource>;
+  let fixture: ComponentFixture<ValueCellComponent<GenericResource>>;
 
   const makeComponent = (
     value: unknown,
     fieldDefinition: Partial<FieldDefinition> = {},
-    customLuigiClient?: LuigiClient,
   ) => {
-    mockLuigiClient = customLuigiClient || createMockLuigiClient();
     fixture = TestBed.createComponent(ValueCellComponent);
     component = fixture.componentInstance;
 
@@ -44,7 +34,6 @@ describe('ValueCellComponent', () => {
 
     fixture.componentRef.setInput('resource', resource);
     fixture.componentRef.setInput('fieldDefinition', field);
-    fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
     fixture.detectChanges();
 
@@ -366,13 +355,9 @@ describe('ValueCellComponent', () => {
       const writeTextSpy = vi.fn().mockResolvedValue(undefined);
       Object.assign(navigator, { clipboard: { writeText: writeTextSpy } });
 
-      const showAlertSpy = vi.fn();
-      const customLuigiClient = createMockLuigiClient(showAlertSpy);
-      const { fixture } = makeComponent(
-        'test-value',
-        { uiSettings: { withCopyButton: true } },
-        customLuigiClient,
-      );
+      const { fixture } = makeComponent('test-value', {
+        uiSettings: { withCopyButton: true },
+      });
 
       const compiled = fixture.nativeElement;
       const copyButton = compiled.querySelector('ui5-icon[name="copy"]');
@@ -382,11 +367,6 @@ describe('ValueCellComponent', () => {
       fixture.detectChanges();
 
       expect(writeTextSpy).toHaveBeenCalledWith('test-value');
-      expect(showAlertSpy).toHaveBeenCalledWith({
-        text: 'Copied to clipboard',
-        type: 'success',
-        closeAfter: 2000,
-      });
     });
 
     it('should stop event propagation when copy button is clicked', () => {
@@ -780,7 +760,6 @@ describe('ValueCellComponent', () => {
     });
 
     it('should generate testId with custom property', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -796,7 +775,6 @@ describe('ValueCellComponent', () => {
 
       fixture.componentRef.setInput('resource', resource);
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -944,7 +922,9 @@ describe('ValueCellComponent', () => {
       });
       const compiled = fixture.nativeElement;
 
-      const tooltipIcon = compiled.querySelector('ui5-icon[name="information"]');
+      const tooltipIcon = compiled.querySelector(
+        'ui5-icon[name="information"]',
+      );
       expect(tooltipIcon).toBeTruthy();
     });
 
@@ -963,7 +943,6 @@ describe('ValueCellComponent', () => {
 
   describe('value without resource', () => {
     it('should use fieldDefinition value when resource is not provided', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -973,7 +952,6 @@ describe('ValueCellComponent', () => {
       };
 
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -981,7 +959,6 @@ describe('ValueCellComponent', () => {
     });
 
     it('should prioritize resource value over fieldDefinition value', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -997,7 +974,6 @@ describe('ValueCellComponent', () => {
 
       fixture.componentRef.setInput('resource', resource);
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -1005,7 +981,6 @@ describe('ValueCellComponent', () => {
     });
 
     it('should use fieldDefinition value as fallback when resource value is null', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -1021,7 +996,6 @@ describe('ValueCellComponent', () => {
 
       fixture.componentRef.setInput('resource', resource);
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -1029,7 +1003,6 @@ describe('ValueCellComponent', () => {
     });
 
     it('should use fieldDefinition value as fallback when resource value is undefined', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -1045,7 +1018,6 @@ describe('ValueCellComponent', () => {
 
       fixture.componentRef.setInput('resource', resource);
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -1053,7 +1025,6 @@ describe('ValueCellComponent', () => {
     });
 
     it('should use fieldDefinition value as fallback when property path does not exist in resource', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -1069,7 +1040,6 @@ describe('ValueCellComponent', () => {
 
       fixture.componentRef.setInput('resource', resource);
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -1077,7 +1047,6 @@ describe('ValueCellComponent', () => {
     });
 
     it('should handle fieldDefinition value with uiSettings', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -1088,7 +1057,6 @@ describe('ValueCellComponent', () => {
       };
 
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -1101,9 +1069,6 @@ describe('ValueCellComponent', () => {
       const writeTextSpy = vi.fn().mockResolvedValue(undefined);
       Object.assign(navigator, { clipboard: { writeText: writeTextSpy } });
 
-      const showAlertSpy = vi.fn();
-      const customLuigiClient = createMockLuigiClient(showAlertSpy);
-      mockLuigiClient = customLuigiClient;
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -1114,7 +1079,6 @@ describe('ValueCellComponent', () => {
       };
 
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 
@@ -1126,15 +1090,9 @@ describe('ValueCellComponent', () => {
       fixture.detectChanges();
 
       expect(writeTextSpy).toHaveBeenCalledWith('copy-me');
-      expect(showAlertSpy).toHaveBeenCalledWith({
-        text: 'Copied to clipboard',
-        type: 'success',
-        closeAfter: 2000,
-      });
     });
 
     it('should handle fieldDefinition value with jsonPathExpression', () => {
-      mockLuigiClient = createMockLuigiClient();
       fixture = TestBed.createComponent(ValueCellComponent);
       component = fixture.componentInstance;
 
@@ -1151,7 +1109,6 @@ describe('ValueCellComponent', () => {
 
       fixture.componentRef.setInput('resource', resource);
       fixture.componentRef.setInput('fieldDefinition', field);
-      fixture.componentRef.setInput('LuigiClient', mockLuigiClient);
 
       fixture.detectChanges();
 

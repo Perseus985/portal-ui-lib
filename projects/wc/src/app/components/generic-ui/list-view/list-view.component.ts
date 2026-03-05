@@ -1,7 +1,7 @@
-import { processFields } from '../../../utils/proccess-fields';
+import { executeButtonAction } from '../../../utils/field-definition.utils';
 import { addSearchParams } from '../../../utils/set-search-params';
+import { GenericTable } from '../generic-table/generic-table.component';
 import { GenericView } from '../generic-view/generic-view.component';
-import { ValueCellComponent } from '../value-cell/value-cell.component';
 import { CreateResourceModal } from './create-resource-modal/create-resource-modal.component';
 import {
   ChangeDetectionStrategy,
@@ -16,16 +16,6 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { IllustratedMessage } from '@fundamental-ngx/ui5-webcomponents-fiori/illustrated-message';
-import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
-import { Option } from '@fundamental-ngx/ui5-webcomponents/option';
-import { Select } from '@fundamental-ngx/ui5-webcomponents/select';
-import { Table } from '@fundamental-ngx/ui5-webcomponents/table';
-import { TableCell } from '@fundamental-ngx/ui5-webcomponents/table-cell';
-import { TableGrowing } from '@fundamental-ngx/ui5-webcomponents/table-growing';
-import { TableHeaderCell } from '@fundamental-ngx/ui5-webcomponents/table-header-cell';
-import { TableHeaderRow } from '@fundamental-ngx/ui5-webcomponents/table-header-row';
-import { TableRow } from '@fundamental-ngx/ui5-webcomponents/table-row';
 import { ToolbarButton } from '@fundamental-ngx/ui5-webcomponents/toolbar-button';
 import { LuigiClient } from '@luigi-project/client/luigi-element';
 import {
@@ -56,22 +46,7 @@ import { finalize } from 'rxjs/operators';
   styleUrls: ['./list-view.component.scss'],
   encapsulation: ViewEncapsulation.ShadowDom,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    CreateResourceModal,
-    Icon,
-    IllustratedMessage,
-    Table,
-    TableCell,
-    TableHeaderCell,
-    TableHeaderRow,
-    TableRow,
-    ToolbarButton,
-    ValueCellComponent,
-    Select,
-    Option,
-    TableGrowing,
-    GenericView,
-  ],
+  imports: [CreateResourceModal, ToolbarButton, GenericView, GenericTable],
 })
 export class ListView {
   private resourceService = inject(ResourceService);
@@ -92,11 +67,25 @@ export class ListView {
       `This page displays the created ${this.resourceDefinition()?.plural} in your environment`,
   );
   resourceDefinition = computed(() => this.context().resourceDefinition);
-  columns = computed(
-    () => this.resourceDefinition()?.ui?.listView?.fields ?? [],
-  );
-  viewColumns = computed(() => processFields(this.columns()));
-  readyCondition = computed(() => this.resourceDefinition()?.readyCondition);
+  columns = computed(() => {
+    let columns = this.resourceDefinition()?.ui?.listView?.fields ?? [];
+
+    const readyCondition = this.resourceDefinition()?.readyCondition;
+    if (readyCondition) {
+      columns = [
+        {
+          ...readyCondition,
+          uiSettings: {
+            ...readyCondition.uiSettings,
+            displayAs: 'alert',
+          },
+        },
+        ...columns,
+      ];
+    }
+
+    return columns;
+  });
   hasUiCreateViewFields = computed(
     () => !!this.resourceDefinition()?.ui?.createView?.fields?.length,
   );
@@ -113,6 +102,7 @@ export class ListView {
   private isLoadingList = false;
   private isNamespaced = computed(() => isNamespacedResource(this.context()));
   protected readonly getResourceValueByJsonPath = getResourceValueByJsonPath;
+  protected trackBy = (item) => item.metadata.name;
 
   constructor() {
     effect(() => {
@@ -170,9 +160,8 @@ export class ListView {
     this.hasMore.set(this.resources().length < this.totalItemsCount());
   }
 
-  onLimitChange(event: any) {
-    const newLimit = parseInt(event.detail.selectedOption.value, 10);
-    this.paginationLimit.set(newLimit);
+  onLimitChange(limit: number) {
+    this.paginationLimit.set(limit);
     this.resetPagination();
   }
 
@@ -283,12 +272,9 @@ export class ListView {
   }
 
   private getListQueryFields() {
-    const additionalFields: FieldDefinition[] = [];
-
-    const readyCondition = this.readyCondition();
-    if (readyCondition) {
-      additionalFields.push(readyCondition);
-    }
+    const additionalFields: FieldDefinition[] = [
+      { property: 'metadata.deletionTimestamp' },
+    ];
 
     if (this.isNamespaced()) {
       additionalFields.push({
@@ -313,17 +299,7 @@ export class ListView {
     return resourceDefinition;
   }
 
-  isAvailable(item: Resource) {
-    return item.ready && !item.metadata.deletionTimestamp;
-  }
-
-  getAccessibleName(item: Resource): string {
-    if (item.metadata.deletionTimestamp) {
-      return 'Resource is pending deletion';
-    } else if (!item.ready) {
-      return 'Resource is not ready';
-    }
-
-    return '';
+  executeAction(event) {
+    executeButtonAction(this.LuigiClient(), event.field, event.resource);
   }
 }

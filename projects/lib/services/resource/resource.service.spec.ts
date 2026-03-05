@@ -430,6 +430,7 @@ describe('ResourceService', () => {
       expect(results[0]).toEqual({
         items: [
           {
+            isAvailable: true,
             metadata: {
               uid: 'uid1',
             },
@@ -437,6 +438,7 @@ describe('ResourceService', () => {
             ready: true,
           },
           {
+            isAvailable: true,
             metadata: {
               uid: 'uid2',
             },
@@ -2358,6 +2360,85 @@ describe('ResourceService', () => {
         ),
       );
       expect(mockApollo.mutate).toHaveBeenCalled();
+    });
+  });
+
+  describe('Availability and Accessible Name', () => {
+    it('isAvailable: should return true when resource is ready and not pending deletion', () => {
+      const resource = {
+        ready: true,
+        metadata: { name: 'res1' },
+      } as any;
+
+      expect(service.isAvailable(resource)).toBe(true);
+    });
+
+    it('isAvailable: should return false when resource is not ready', () => {
+      const resource = {
+        ready: false,
+        metadata: { name: 'res1' },
+      } as any;
+
+      expect(service.isAvailable(resource)).toBe(false);
+    });
+
+    it('isAvailable: should return false when resource has a deletionTimestamp', () => {
+      const resource = {
+        ready: true,
+        metadata: {
+          name: 'res1',
+          deletionTimestamp: '2023-10-27T10:00:00Z',
+        },
+      } as any;
+
+      expect(service.isAvailable(resource)).toBe(false);
+    });
+
+    it('getAccessibleName: should return undefined string for a healthy, ready resource', () => {
+      const resource = {
+        ready: true,
+        metadata: { name: 'res1' },
+      } as any;
+
+      expect(service.getAccessibleName(resource)).toBeUndefined();
+    });
+
+    it('getAccessibleName: should return "Resource is pending deletion" when deletionTimestamp is present', () => {
+      const resource = {
+        ready: true,
+        metadata: {
+          name: 'res1',
+          deletionTimestamp: '2023-10-27T10:00:00Z',
+        },
+      } as any;
+
+      expect(service.getAccessibleName(resource)).toBe(
+        'Resource is pending deletion',
+      );
+    });
+
+    it('getAccessibleName: should prioritize deletion message over not ready message', () => {
+      const resource = {
+        ready: false,
+        metadata: {
+          name: 'res1',
+          deletionTimestamp: '2023-10-27T10:00:00Z',
+        },
+      } as any;
+
+      // Since deletionTimestamp check comes first in the if/else logic
+      expect(service.getAccessibleName(resource)).toBe(
+        'Resource is pending deletion',
+      );
+    });
+
+    it('getAccessibleName: should return "Resource is not ready" when not ready and not deleting', () => {
+      const resource = {
+        ready: false,
+        metadata: { name: 'res1' },
+      } as any;
+
+      expect(service.getAccessibleName(resource)).toBe('Resource is not ready');
     });
   });
 });

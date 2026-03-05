@@ -1,8 +1,5 @@
 import { evaluateCssRules } from '../../../utils/cssRules.engine';
-import {
-  executeButtonAction,
-  getFieldValue,
-} from '../../../utils/field-definition.utils';
+import { getFieldValue } from '../../../utils/field-definition.utils';
 import { BooleanValue } from './boolean-value/boolean-value.component';
 import { LinkValue } from './link-value/link-value.component';
 import { SecretValue } from './secret-value/secret-value.component';
@@ -12,13 +9,16 @@ import {
   Component,
   computed,
   input,
+  output,
   signal,
 } from '@angular/core';
 import { Button } from '@fundamental-ngx/ui5-webcomponents/button';
 import { Icon } from '@fundamental-ngx/ui5-webcomponents/icon';
-import { LuigiClient } from '@luigi-project/client/luigi-element';
-import { FieldDefinition } from '@platform-mesh/portal-ui-lib/models/models';
-import { Resource } from '@platform-mesh/portal-ui-lib/models/models/resource';
+import {
+  FieldDefinition,
+  GenericResource,
+  ValueCellButtonClickEvent,
+} from '@platform-mesh/portal-ui-lib/models/models';
 
 @Component({
   selector: 'pm-value-cell',
@@ -28,10 +28,10 @@ import { Resource } from '@platform-mesh/portal-ui-lib/models/models/resource';
   styleUrls: ['./value-cell.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ValueCellComponent {
+export class ValueCellComponent<T extends GenericResource> {
   fieldDefinition = input.required<FieldDefinition>();
-  resource = input<Resource>();
-  LuigiClient = input.required<LuigiClient>();
+  resource = input<T>();
+  buttonClick = output<ValueCellButtonClickEvent<T>>();
 
   value = computed(() =>
     getFieldValue(this.fieldDefinition(), this.resource()),
@@ -99,19 +99,14 @@ export class ValueCellComponent {
   public copyValue(event: Event) {
     event.stopPropagation();
     navigator.clipboard.writeText(this.value() || '');
-    this.LuigiClient().uxManager().showAlert({
-      text: 'Copied to clipboard',
-      type: 'success',
-      closeAfter: 2000,
-    });
   }
 
-  protected buttonAction(event: any) {
+  protected buttonClicked(event: MouseEvent) {
     event.stopPropagation();
-    executeButtonAction(
-      this.LuigiClient(),
-      this.fieldDefinition(),
-      this.resource(),
-    );
+    this.buttonClick.emit({
+      event,
+      field: this.fieldDefinition(),
+      resource: this.resource(),
+    });
   }
 }

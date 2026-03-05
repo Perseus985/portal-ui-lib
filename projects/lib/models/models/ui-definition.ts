@@ -12,7 +12,14 @@ export interface PropertyField {
 
 export interface UiSettings {
   labelDisplay?: boolean;
-  displayAs?: 'secret' | 'boolIcon' | 'link' | 'tooltip' | 'img' | 'button';
+  displayAs?:
+    | 'secret'
+    | 'boolIcon'
+    | 'link'
+    | 'tooltip'
+    | 'alert'
+    | 'img'
+    | 'button';
   buttonSettings?: ButtonSettings;
   tooltipIcon?: string;
   withCopyButton?: boolean;
@@ -57,6 +64,16 @@ export interface CssRule {
   styles: Partial<CSSStyleDeclaration>;
 }
 
+export interface GenericResource extends Record<string, any> {
+  isAvailable?: boolean; // Controls row interactivity
+}
+
+export interface ValueCellButtonClickEvent<T extends GenericResource> {
+  event: MouseEvent;
+  field: FieldDefinition;
+  resource: T | undefined;
+}
+
 export interface FieldDefinition {
   label?: string;
   property?: string | string[];
@@ -80,7 +97,7 @@ export interface FieldDefinition {
   };
 }
 
-interface UiView {
+export interface UiView {
   actions?: FieldDefinition[];
   fields?: FieldDefinition[];
   resourceDescription?: FieldDefinition;

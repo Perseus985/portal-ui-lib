@@ -1,4 +1,8 @@
-import { UIDefinition } from './ui-definition';
+import {
+  FieldDefinition,
+  GenericResource,
+  UIDefinition,
+} from './ui-definition';
 import { Condition, ObjectMeta } from 'kubernetes-types/meta/v1';
 
 export interface ResourceStatus {
@@ -15,13 +19,15 @@ export interface ResourceMeta extends ObjectMeta {
   name: string;
 }
 
-export interface Resource extends Record<string, any> {
+export interface Resource extends GenericResource {
   metadata: ResourceMeta;
   spec?: ResourceSpec;
   status?: ResourceStatus;
   __typename?: string;
-  ready?: boolean;
   data?: Record<string, any>;
+  ready?: boolean;
+  isAvailable?: boolean;
+  accessibleName?: string;
 }
 
 export interface ResourceDefinition {
@@ -33,10 +39,7 @@ export interface ResourceDefinition {
   name?: string;
   scope?: KubernetesScope;
   namespace?: string;
-  readyCondition?: {
-    jsonPathExpression: string;
-    property: string | string[];
-  };
+  readyCondition?: FieldDefinition;
   ui?: UIDefinition;
 }
 

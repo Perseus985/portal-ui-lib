@@ -142,8 +142,13 @@ describe('ListViewComponent', () => {
     newFixture.detectChanges();
 
     const expectedFields = utils.generateGraphQLFields([
+      {
+        property: 'status.ready',
+      },
       { property: 'metadata.name' },
-      readyCondition,
+      {
+        property: 'metadata.deletionTimestamp',
+      },
     ]);
 
     expect(mockResourceService.list).toHaveBeenCalledWith(
@@ -356,87 +361,6 @@ describe('ListViewComponent', () => {
     expect(newComponent).toBeTruthy();
   });
 
-  describe('Availability and Accessible Name', () => {
-    it('isAvailable: should return true when resource is ready and not pending deletion', () => {
-      const resource = {
-        ready: true,
-        metadata: { name: 'res1' },
-      } as any;
-
-      expect(component.isAvailable(resource)).toBe(true);
-    });
-
-    it('isAvailable: should return false when resource is not ready', () => {
-      const resource = {
-        ready: false,
-        metadata: { name: 'res1' },
-      } as any;
-
-      expect(component.isAvailable(resource)).toBe(false);
-    });
-
-    it('isAvailable: should return false when resource has a deletionTimestamp', () => {
-      const resource = {
-        ready: true,
-        metadata: {
-          name: 'res1',
-          deletionTimestamp: '2023-10-27T10:00:00Z',
-        },
-      } as any;
-
-      expect(component.isAvailable(resource)).toBe(false);
-    });
-
-    it('getAccessibleName: should return empty string for a healthy, ready resource', () => {
-      const resource = {
-        ready: true,
-        metadata: { name: 'res1' },
-      } as any;
-
-      expect(component.getAccessibleName(resource)).toBe('');
-    });
-
-    it('getAccessibleName: should return "Resource is pending deletion" when deletionTimestamp is present', () => {
-      const resource = {
-        ready: true,
-        metadata: {
-          name: 'res1',
-          deletionTimestamp: '2023-10-27T10:00:00Z',
-        },
-      } as any;
-
-      expect(component.getAccessibleName(resource)).toBe(
-        'Resource is pending deletion',
-      );
-    });
-
-    it('getAccessibleName: should prioritize deletion message over not ready message', () => {
-      const resource = {
-        ready: false,
-        metadata: {
-          name: 'res1',
-          deletionTimestamp: '2023-10-27T10:00:00Z',
-        },
-      } as any;
-
-      // Since deletionTimestamp check comes first in the if/else logic
-      expect(component.getAccessibleName(resource)).toBe(
-        'Resource is pending deletion',
-      );
-    });
-
-    it('getAccessibleName: should return "Resource is not ready" when not ready and not deleting', () => {
-      const resource = {
-        ready: false,
-        metadata: { name: 'res1' },
-      } as any;
-
-      expect(component.getAccessibleName(resource)).toBe(
-        'Resource is not ready',
-      );
-    });
-  });
-
   describe('Undefined checks', () => {
     it('should show alert and throw error when resourceDefinition is undefined in list method', () => {
       const newFixture = TestBed.createComponent(ListView);
@@ -530,13 +454,7 @@ describe('ListViewComponent', () => {
 
   describe('Pagination', () => {
     it('should update pagination limit when onLimitChange is called', () => {
-      const event = {
-        detail: {
-          selectedOption: {
-            value: '10',
-          },
-        },
-      };
+      const event = 10;
 
       component.onLimitChange(event);
 
@@ -554,13 +472,7 @@ describe('ListViewComponent', () => {
       ] as any);
       component.remainingItemCount.set(10);
 
-      const event = {
-        detail: {
-          selectedOption: {
-            value: '3',
-          },
-        },
-      };
+      const event = 3;
 
       component.onLimitChange(event);
 
