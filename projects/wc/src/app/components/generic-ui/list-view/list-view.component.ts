@@ -39,7 +39,7 @@ export class ListView {
       `This page displays the created ${this.resourceDefinition()?.entityCollection} in your environment`,
   );
 
-  private isDemoEnabled = computed(() =>
+  isDemoEnabled = computed(() =>
     this.LuigiClient().getActiveFeatureToggles().includes('neoNephosDemo'),
   );
 
@@ -63,7 +63,7 @@ export class ListView {
 
   dashboardConfig = computed(() => {
     const backgroundImageUrl = this.isDemoEnabled()
-      ? '/assets/nn-demo.png'
+      ? ''
       : (this.resourceDefinition()?.ui?.listView?.backgroundImageUrl ??
         '/assets/pm_background.png');
     return {

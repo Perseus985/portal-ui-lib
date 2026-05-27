@@ -110,7 +110,7 @@ export class DetailView {
       false,
   );
   isDownloadingKubeConfig = signal(false);
-  private isDemoEnabled = computed(() =>
+  isDemoEnabled = computed(() =>
     this.LuigiClient().getActiveFeatureToggles().includes('neoNephosDemo'),
   );
 
@@ -140,7 +140,7 @@ export class DetailView {
     }
 
     const backgroundImageUrl = this.isDemoEnabled()
-      ? '/assets/nn-demo.png'
+      ? ''
       : (this.resourceDefinition()?.ui?.detailView?.backgroundImageUrl ??
         '/assets/pm_background.png');
 
@@ -159,6 +159,7 @@ export class DetailView {
       entity: this.resourceDefinition()?.entity,
       resourceId: this.resourceId(),
       userId: this.context().userId,
+      seed: this.isDemoEnabled() ? 'demo' : ''
     });
 
     return c?.sections ?? (this.isDemoEnabled() ? SECTIONS : []);
@@ -169,6 +170,7 @@ export class DetailView {
       entity: this.resourceDefinition()?.entity,
       resourceId: this.resourceId(),
       userId: this.context().userId,
+      seed: this.isDemoEnabled() ? 'demo' : ''
     });
 
     return c?.cards ?? (this.isDemoEnabled() ? CARDS : []);
@@ -442,6 +444,7 @@ export class DetailView {
         entity: this.resourceDefinition()?.entity,
         resourceId: this.resourceId(),
         userId: this.context().userId,
+        seed: this.isDemoEnabled() ? 'demo' : ''
       },
       config,
     );
